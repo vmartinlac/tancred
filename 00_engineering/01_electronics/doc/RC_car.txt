@@ -1,0 +1,11 @@
+Moteur propultion
+=================
+avant: +7V
+arrière: -4.71 V
+
+Servo direction
+===============
+0.17 V
+0.25 V
+0.33 V
+
