@@ -1,0 +1,15 @@
+html
+    head
+        script(src="jquery-3.4.1.min.js")
+        script(src="script.js")
+    body
+        map(name='themap')
+            area(shape='rect' coords='20,17,107,76' href='javascript:directionleft()')
+            area(shape='rect' coords='131,17,219,76' href='javascript:directionfront()')
+            area(shape='rect' coords='237,17,328,76' href='javascript:directionright()')
+            area(shape='rect' coords='116,116,227,173' href='javascript:speedforward()')
+            area(shape='rect' coords='116,188,227,246' href='javascript:speedstop()')
+            area(shape='rect' coords='116,262,227,319' href='javascript:speedbackward()')
+        img(src='controller.png' usemap='#themap')
+
+        
