@@ -1,0 +1,12 @@
+
+struct VelocityMessage
+{
+    double linear_velocity;
+    double steering_velocity;
+}
+
+struct ImageMessage
+{
+    double timestamp;
+}
+
