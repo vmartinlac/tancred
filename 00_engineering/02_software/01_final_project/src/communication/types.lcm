@@ -1,12 +1,18 @@
 
-struct VelocityMessage
+struct Image
 {
-    double linear_velocity;
-    double steering_velocity;
+    int32_t frame_id;
+    double timestamp;
+    int32_t width;
+    int32_t height;
+    int32_t encoding;
+    int32_t buffer_size;
+    int8_t buffer[buffer_size];
 }
 
-struct ImageMessage
+struct MotorCommand
 {
-    double timestamp;
+    double direction;
+    double speed;
 }
 

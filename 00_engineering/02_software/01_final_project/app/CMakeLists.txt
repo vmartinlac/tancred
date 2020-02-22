@@ -1,4 +1,4 @@
-add_subdirectory(actuators)
+add_subdirectory(autodriver)
+add_subdirectory(camerainterface)
 add_subdirectory(humandriver)
-add_subdirectory(sensors)
-
+add_subdirectory(motorsinterface)

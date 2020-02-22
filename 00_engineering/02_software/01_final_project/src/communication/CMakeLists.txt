@@ -9,4 +9,5 @@ lcm_wrap_types(
 lcm_add_library(tancred_communication CPP ${COMM_CPP_HEADERS})
 
 target_include_directories(tancred_communication INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
+target_link_libraries(tancred_communication INTERFACE lcm)
 
