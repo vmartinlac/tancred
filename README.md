@@ -23,4 +23,6 @@ Software Dependencies
 * LCM (lightweight communication and marshalling)
 * Qt5
 * realsense2
-* CUDA
+* sqlite3
+* pytorch
+* cuda

@@ -1,5 +1,5 @@
 
-struct Image
+struct ImageMessage
 {
     int32_t frame_id;
     double timestamp;
@@ -10,9 +10,14 @@ struct Image
     int8_t buffer[buffer_size];
 }
 
-struct MotorCommand
+struct MotorCommandMessage
 {
-    double direction;
+    double steering;
     double speed;
+}
+
+struct AutoPilotMessage
+{
+    bool enable;
 }
 

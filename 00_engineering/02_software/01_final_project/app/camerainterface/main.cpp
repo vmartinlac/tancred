@@ -1,7 +1,7 @@
 #include <librealsense2/rs.hpp>
 #include <iostream>
 #include <lcm/lcm-cpp.hpp>
-#include <Image.hpp>
+#include <ImageMessage.hpp>
 
 int main(int num_args, char** args)
 {
@@ -30,7 +30,7 @@ int main(int num_args, char** args)
 
         if(image)
         {
-            Image msg;
+            ImageMessage msg;
 
             msg.frame_id = image.get_frame_number();
             msg.timestamp = image.get_timestamp();

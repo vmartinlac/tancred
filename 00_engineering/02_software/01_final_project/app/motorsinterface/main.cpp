@@ -1,7 +1,7 @@
 #include <lcm/lcm-cpp.hpp>
 #include <fstream>
 #include <iostream>
-#include <MotorCommand.hpp>
+#include <MotorCommandMessage.hpp>
 
 class Handler
 {
@@ -22,9 +22,9 @@ public:
         myFile.close();
     }
 
-    void handle(const lcm::ReceiveBuffer* rbuf, const std::string& channel, const MotorCommand* msg)
+    void handle(const lcm::ReceiveBuffer* rbuf, const std::string& channel, const MotorCommandMessage* msg)
     {
-        myFile << "CMD " << msg->direction << " " << msg->speed << std::endl;
+        myFile << "CMD " << msg->steering << " " << msg->speed << std::endl;
     }
 
 protected:
@@ -56,7 +56,7 @@ int main(int num_args, char** args)
         exit(1);
     }
 
-    conn.subscribe<MotorCommand>("motors", &Handler::handle, &handler);
+    conn.subscribe<MotorCommandMessage>("motors", &Handler::handle, &handler);
 
     while(true)
     {
