@@ -1,19 +1,19 @@
 
 add_executable(
-    tancred_humandriver
+    tancred_wizard
+    LCMThread.h
+    LCMThread.cpp
     MainWindow.h
     MainWindow.cpp
     VideoWidget.h
     VideoWidget.cpp
-    ConfigDialog.h
-    ConfigDialog.cpp
-    ConfigDialog.ui
     Dataset.h
     Dataset.cpp
+    resources.qrc
     main.cpp)
 
 target_link_libraries(
-    tancred_humandriver
+    tancred_wizard
     PUBLIC
     tancred_core
     PkgConfig::sqlite3

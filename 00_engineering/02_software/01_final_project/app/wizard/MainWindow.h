@@ -3,20 +3,26 @@
 
 #include <QLabel>
 #include <QMainWindow>
-#include <lcm/lcm-cpp.hpp>
+#include "LCMThread.h"
 #include "VideoWidget.h"
 
 class MainWindow : public QMainWindow
 {
+    Q_OBJECT
+
 public:
 
-    MainWindow(lcm::LCM* conn, QWidget* w=nullptr);
+    MainWindow(LCMThread* conn, QWidget* w=nullptr);
 
     ~MainWindow() override = default;
 
+protected slots:
+
+    void about();
+
 protected:
 
-    lcm::LCM* myConn;
+    LCMThread* myConn;
     VideoWidget* myVideo;
 };
 

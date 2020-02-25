@@ -56,7 +56,7 @@ int main(int num_args, char** args)
         exit(1);
     }
 
-    conn.subscribe<MotorCommandMessage>("motors", &Handler::handle, &handler);
+    conn.subscribe<MotorCommandMessage>("Motors", &Handler::handle, &handler);
 
     while(true)
     {

@@ -1,6 +1,5 @@
-add_subdirectory(autodriver)
 add_subdirectory(camerainterface)
-add_subdirectory(humandriver)
 add_subdirectory(motorsinterface)
-add_subdirectory(humansupervisor)
+add_subdirectory(autodriver)
+add_subdirectory(wizard)
 

@@ -41,7 +41,7 @@ int main(int num_args, char** args)
             msg.buffer.resize(msg.buffer_size);
             memcpy(msg.buffer.data(), image.get_data(), msg.buffer_size);
 
-            conn.publish("camera", &msg);
+            conn.publish("Camera", &msg);
         }
     }
 

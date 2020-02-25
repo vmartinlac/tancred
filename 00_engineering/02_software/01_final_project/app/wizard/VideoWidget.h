@@ -4,13 +4,16 @@
 #include <QWidget>
 #include <QPaintEvent>
 #include <QMouseEvent>
-#include <lcm/lcm-cpp.hpp>
+#include "LCMThread.h"
 
 class VideoWidget : public QWidget
 {
+    Q_OBJECT
+
 public:
 
-    VideoWidget(lcm::LCM* video, QWidget* parent=nullptr);
+    VideoWidget(LCMThread* video, QWidget* parent=nullptr);
+    ~VideoWidget();
 
 protected:
 
@@ -21,6 +24,6 @@ protected:
 
 protected:
 
-    lcm::LCM* myConn;
+    LCMThread* myConn;
 };
 

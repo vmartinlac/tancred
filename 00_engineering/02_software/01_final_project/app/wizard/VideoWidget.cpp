@@ -1,17 +1,25 @@
+#include <iostream>
 #include <QPainter>
+#include <QPixmap>
 #include "VideoWidget.h"
 
-VideoWidget::VideoWidget(lcm::LCM* video, QWidget* parent) : QWidget(parent)
+VideoWidget::VideoWidget(LCMThread* conn, QWidget* parent) : QWidget(parent)
 {
-    myConn = video;
+    myConn = conn;
 
     setFocusPolicy(Qt::StrongFocus);
+}
+
+VideoWidget::~VideoWidget()
+{
+    //myConn->unsubscribe(mySubscription);
 }
 
 void VideoWidget::paintEvent(QPaintEvent* ev)
 {
     QPainter painter(this);
     painter.setBackground(QBrush(Qt::black));
+    //painter.setBackground(QBrush(QPixmap(":/images/background.png")));
     painter.eraseRect(painter.viewport());
 }
 

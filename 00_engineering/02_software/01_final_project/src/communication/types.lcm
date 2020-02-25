@@ -12,12 +12,13 @@ struct ImageMessage
 
 struct MotorCommandMessage
 {
+    int8_t fullstop;
     double steering;
     double speed;
 }
 
-struct AutoPilotMessage
+struct SelfDrivingMessage
 {
-    bool enable;
+    int8_t enable;
 }
 
