@@ -2,6 +2,7 @@
 #pragma once
 
 #include <memory>
+#include <QImage>
 #include <QSocketNotifier>
 #include <QThread>
 #include <lcm/lcm-cpp.hpp>
@@ -14,6 +15,10 @@ class LCMThread : public QThread
 public:
 
     void run() override;
+
+signals:
+
+    void onImageReceived(int frame, double timestamp, const QImage& image);
 
 public slots:
 

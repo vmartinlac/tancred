@@ -30,9 +30,19 @@ void LCMThread::run()
     delete myLCM;
 }
 
-void LCMThread::onFrameReceived(const lcm::ReceiveBuffer*, const std::string&, const ImageMessage* image)
+void LCMThread::onFrameReceived(const lcm::ReceiveBuffer*, const std::string&, const ImageMessage* frame)
 {
-    std::cout << "F" << std::endl;
+    QImage image = QImage(
+        reinterpret_cast<const uint8_t*>( frame->buffer.data() ),
+        frame->width,
+        frame->height,
+        frame->width,
+        QImage::Format_Grayscale8).copy();
+
+    onImageReceived(
+        frame->frame_id,
+        frame->timestamp,
+        image);
 }
 
 void LCMThread::onSocketActivated()

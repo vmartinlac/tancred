@@ -12,8 +12,27 @@ class VideoWidget : public QWidget
 
 public:
 
+    enum Mode
+    {
+        MODE_SILENT,
+        MODE_DRIVING,
+        MODE_RECORDING
+    };
+
+public:
+
     VideoWidget(LCMThread* video, QWidget* parent=nullptr);
     ~VideoWidget();
+
+public slots:
+
+    void setModeToSilent();
+    void setModeToDriving();
+    void setModeToRecording();
+
+protected slots:
+
+    void onImageReceived(int frame, double timestamp, const QImage& image);
 
 protected:
 
@@ -25,5 +44,7 @@ protected:
 protected:
 
     LCMThread* myConn;
+    QImage myImage;
+    Mode myMode;
 };
 

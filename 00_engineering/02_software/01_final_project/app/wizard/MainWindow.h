@@ -5,6 +5,7 @@
 #include <QMainWindow>
 #include "LCMThread.h"
 #include "VideoWidget.h"
+#include "ControllerWidget.h"
 
 class MainWindow : public QMainWindow
 {
@@ -24,5 +25,6 @@ protected:
 
     LCMThread* myConn;
     VideoWidget* myVideo;
+    ControllerWidget* myController;
 };
 

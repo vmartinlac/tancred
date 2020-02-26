@@ -1,6 +1,8 @@
 
 add_executable(
     tancred_wizard
+    ControllerWidget.h
+    ControllerWidget.cpp
     LCMThread.h
     LCMThread.cpp
     MainWindow.h
