@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iostream>
 #include <MotorCommandMessage.hpp>
+#include "common.h"
 
 class Handler
 {
@@ -48,7 +49,7 @@ int main(int num_args, char** args)
         exit(1);
     }
 
-    lcm::LCM conn;
+    lcm::LCM conn(LCM_PROVIDER);
 
     if(conn.good() == false)
     {

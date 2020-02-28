@@ -2,10 +2,11 @@
 #include <iostream>
 #include <lcm/lcm-cpp.hpp>
 #include <ImageMessage.hpp>
+#include "common.h"
 
 int main(int num_args, char** args)
 {
-    lcm::LCM conn;
+    lcm::LCM conn(LCM_PROVIDER);
 
     if(conn.good() == false)
     {

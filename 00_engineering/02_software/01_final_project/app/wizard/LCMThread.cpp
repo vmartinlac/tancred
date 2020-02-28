@@ -3,10 +3,11 @@
 #include <ImageMessage.hpp>
 #include <MotorCommandMessage.hpp>
 #include "LCMThread.h"
+#include "common.h"
 
 void LCMThread::run()
 {
-    myLCM = new lcm::LCM();
+    myLCM = new lcm::LCM(LCM_PROVIDER);
 
     if(myLCM->good() == false)
     {
