@@ -17,7 +17,7 @@ int main(int num_args, char** args)
     rs2::pipeline pipeline;
 
     rs2::config config;
-    config.enable_stream(RS2_STREAM_COLOR, -1, 640, 480, RS2_FORMAT_RGB8);
+    config.enable_stream(RS2_STREAM_COLOR, -1, 640, 480, RS2_FORMAT_Y8);
 
     std::cout << "Starting video pipeline..." << std::endl;
     pipeline.start(config);
@@ -38,7 +38,7 @@ int main(int num_args, char** args)
             msg.width = image.get_width();
             msg.height = image.get_height();
             msg.encoding = 0;
-            msg.buffer_size = image.get_width()*image.get_height()*3;
+            msg.buffer_size = image.get_width()*image.get_height();
             msg.buffer.resize(msg.buffer_size);
             memcpy(msg.buffer.data(), image.get_data(), msg.buffer_size);
 
