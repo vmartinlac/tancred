@@ -17,7 +17,7 @@ int main(int num_args, char** args)
     rs2::pipeline pipeline;
 
     rs2::config config;
-    config.enable_stream(RS2_STREAM_COLOR, -1, 640, 480, RS2_FORMAT_Y8);
+    config.enable_stream(RS2_STREAM_COLOR, -1, 640, 480, RS2_FORMAT_RGB8);
 
     std::cout << "Starting video pipeline..." << std::endl;
     pipeline.start(config);
@@ -40,7 +40,14 @@ int main(int num_args, char** args)
             msg.encoding = 0;
             msg.buffer_size = image.get_width()*image.get_height();
             msg.buffer.resize(msg.buffer_size);
-            memcpy(msg.buffer.data(), image.get_data(), msg.buffer_size);
+            //memcpy(msg.buffer.data(), image.get_data(), msg.buffer_size);
+            for(int i=0; i<480; i++)
+            {
+                for(int j=0; j<640; j++)
+                {
+                    msg.buffer[i*640+j] = reinterpret_cast<const uint8_t*>(image.get_data())[640*3*i + 3*j + 0];
+                }
+            }
 
             conn.publish("Camera", &msg);
         }
