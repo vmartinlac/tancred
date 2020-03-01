@@ -1,0 +1,4 @@
+smcroute -j wlan0 239.255.76.67
+route add -net 224.0.0.0 netmask 240.0.0.0 dev wlan0
+net.ipv4.icmp_echo_ignore_broadcasts = 0
+
