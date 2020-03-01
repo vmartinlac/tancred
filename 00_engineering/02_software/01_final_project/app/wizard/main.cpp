@@ -1,6 +1,6 @@
 #include <iostream>
 #include <QApplication>
-#include "LCMThread.h"
+#include "LCMInterface.h"
 #include "MainWindow.h"
 
 int main(int num_args, char** args)
@@ -9,7 +9,7 @@ int main(int num_args, char** args)
     app.setOrganizationName("vmartinlac");
     app.setApplicationName("tancred_wizard");
 
-    LCMThread* lcm_thread = new LCMThread();
+    LCMInterface* lcm_thread = new LCMInterface();
     lcm_thread->start();
 
     MainWindow* w = new MainWindow(lcm_thread);
@@ -17,7 +17,7 @@ int main(int num_args, char** args)
     const int ret = app.exec();
     delete w;
 
-    lcm_thread->exit(0);
+    lcm_thread->requestInterruption();
     lcm_thread->wait();
     delete lcm_thread;
 

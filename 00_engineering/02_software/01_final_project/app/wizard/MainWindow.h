@@ -3,7 +3,7 @@
 
 #include <QLabel>
 #include <QMainWindow>
-#include "LCMThread.h"
+#include "LCMInterface.h"
 #include "VideoWidget.h"
 #include "ControllerWidget.h"
 
@@ -13,17 +13,19 @@ class MainWindow : public QMainWindow
 
 public:
 
-    MainWindow(LCMThread* conn, QWidget* w=nullptr);
+    MainWindow(LCMInterface* conn, QWidget* w=nullptr);
 
     ~MainWindow() override = default;
 
 protected slots:
 
     void about();
+    void sendEnableSelfDriving();
+    void sendDisableSelfDriving();
 
 protected:
 
-    LCMThread* myConn;
+    LCMInterface* myConn;
     VideoWidget* myVideo;
     ControllerWidget* myController;
 };

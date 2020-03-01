@@ -1,10 +1,12 @@
 
 #pragma once
 
+#include <QTimer>
+#include <QMutex>
 #include <QWidget>
 #include <QPaintEvent>
 #include <QMouseEvent>
-#include "LCMThread.h"
+#include "LCMInterface.h"
 
 class VideoWidget : public QWidget
 {
@@ -21,18 +23,16 @@ public:
 
 public:
 
-    VideoWidget(LCMThread* video, QWidget* parent=nullptr);
+    VideoWidget(LCMInterface* video, QWidget* parent=nullptr);
     ~VideoWidget();
 
 public slots:
 
+    void refresh();
     void setModeToSilent();
     void setModeToDriving();
     void setModeToRecording();
-
-protected slots:
-
-    void onImageReceived(int frame, double timestamp, const QImage& image);
+    void onImageReceived(int frameid, double timestamp, QImage image);
 
 protected:
 
@@ -43,8 +43,10 @@ protected:
 
 protected:
 
-    LCMThread* myConn;
-    QImage myImage;
+    LCMInterface* myConn;
     Mode myMode;
+    bool myHasNewImage;
+    QImage myImage;
+    QTimer* myTimer;
 };
 

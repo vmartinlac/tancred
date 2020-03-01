@@ -1,6 +1,6 @@
 #include "ControllerWidget.h"
 
-ControllerWidget::ControllerWidget(LCMThread* conn, QWidget* parent) : QSlider(parent)
+ControllerWidget::ControllerWidget(LCMInterface* conn, QWidget* parent) : QSlider(parent)
 {
     myConn = conn;
 
@@ -12,7 +12,7 @@ ControllerWidget::ControllerWidget(LCMThread* conn, QWidget* parent) : QSlider(p
 
     connect(this, SIGNAL(sliderPressed()), this, SLOT(onPressed()));
     connect(this, SIGNAL(sliderReleased()), this, SLOT(onReleased()));
-    connect(this, SIGNAL(sliderMoved()), this, SLOT(onMoved()));
+    //connect(this, SIGNAL(sliderMoved()), this, SLOT(onMoved()));
 }
 
 ControllerWidget::~ControllerWidget()

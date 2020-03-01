@@ -3,8 +3,8 @@ add_executable(
     tancred_wizard
     ControllerWidget.h
     ControllerWidget.cpp
-    LCMThread.h
-    LCMThread.cpp
+    LCMInterface.h
+    LCMInterface.cpp
     MainWindow.h
     MainWindow.cpp
     VideoWidget.h

@@ -2,7 +2,7 @@
 #pragma once
 
 #include <QSlider>
-#include "LCMThread.h"
+#include "LCMInterface.h"
 
 class ControllerWidget : public QSlider
 {
@@ -10,7 +10,7 @@ class ControllerWidget : public QSlider
 
 public:
 
-    ControllerWidget(LCMThread* conn, QWidget* parent=nullptr);
+    ControllerWidget(LCMInterface* conn, QWidget* parent=nullptr);
     ~ControllerWidget();
 
 protected slots:
@@ -21,6 +21,6 @@ protected slots:
 
 protected:
 
-    LCMThread* myConn;
+    LCMInterface* myConn;
 };
 

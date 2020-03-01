@@ -3,27 +3,43 @@
 #include <QPixmap>
 #include "VideoWidget.h"
 
-VideoWidget::VideoWidget(LCMThread* conn, QWidget* parent) : QWidget(parent)
+VideoWidget::VideoWidget(LCMInterface* conn, QWidget* parent) : QWidget(parent)
 {
     myConn = conn;
     myMode = MODE_SILENT;
+    myHasNewImage = false;
+    myTimer = new QTimer(this);
+    connect(myTimer, SIGNAL(timeout()), this, SLOT(refresh()));
 
     setFocusPolicy(Qt::StrongFocus);
 
     setMinimumSize(640, 480);
 
+    myTimer->start(1000/30);
+
     connect(
-        conn,
-        SIGNAL(onImageReceived(int, double, const QImage&)),
+        myConn,
+        SIGNAL(imageReceived(int,double,QImage)),
         this,
-        SLOT(onImageReceived(int, double, const QImage&)),
+        SLOT(onImageReceived(int,double,QImage)),
         Qt::QueuedConnection);
 }
 
-void VideoWidget::onImageReceived(int frame, double timestamp, const QImage& image)
+void VideoWidget::onImageReceived(int frameid, double timestamp, QImage image)
 {
+    myHasNewImage = true;
     myImage = image;
-    update();
+}
+
+void VideoWidget::refresh()
+{
+    const bool do_update = myHasNewImage;
+    myHasNewImage = false;
+
+    if(do_update)
+    {
+        update();
+    }
 }
 
 VideoWidget::~VideoWidget()
@@ -40,6 +56,7 @@ void VideoWidget::paintEvent(QPaintEvent* ev)
         painter.eraseRect(painter.viewport());
     }
 
+    if(myImage.isNull() == false && myImage.width() > 0 && myImage.height() > 0)
     {
         const int margin = 20;
 

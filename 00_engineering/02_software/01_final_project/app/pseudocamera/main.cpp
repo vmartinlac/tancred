@@ -12,7 +12,7 @@ int main(int num_args, char** args)
 
     const int width = 640;
     const int height = 480;
-    const std::chrono::milliseconds period(40);
+    const std::chrono::milliseconds period(1000/30);
     const double tau = 2.0;
     const double lambda = 150.0;
 

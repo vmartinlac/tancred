@@ -6,7 +6,7 @@
 #include <QDockWidget>
 #include "MainWindow.h"
 
-MainWindow::MainWindow(LCMThread* conn, QWidget* w) : QMainWindow(w)
+MainWindow::MainWindow(LCMInterface* conn, QWidget* w) : QMainWindow(w)
 {
     myConn = conn;
     myVideo = new VideoWidget(conn);
@@ -51,13 +51,23 @@ MainWindow::MainWindow(LCMThread* conn, QWidget* w) : QMainWindow(w)
     setWindowTitle("Tancred Wizard");
     setMinimumSize(320, 200);
 
-    connect( a_start_self_driving, SIGNAL(triggered()), myConn, SLOT(sendEnableSelfDriving()), Qt::QueuedConnection );
-    connect( a_stop_self_driving, SIGNAL(triggered()), myConn, SLOT(sendDisableSelfDriving()), Qt::QueuedConnection );
+    connect( a_start_self_driving, SIGNAL(triggered()), this, SLOT(sendEnableSelfDriving()), Qt::QueuedConnection );
+    connect( a_stop_self_driving, SIGNAL(triggered()), this, SLOT(sendDisableSelfDriving()), Qt::QueuedConnection );
     connect( a_quit, SIGNAL(triggered()), QApplication::instance(), SLOT(quit()) );
     connect( a_about, SIGNAL(triggered()), this, SLOT(about()) );
     connect( a_silent, SIGNAL(triggered()), myVideo, SLOT(setModeToSilent()) );
     connect( a_driving, SIGNAL(triggered()), myVideo, SLOT(setModeToDriving()) );
     connect( a_recording, SIGNAL(triggered()), myVideo, SLOT(setModeToRecording()) );
+}
+
+void MainWindow::sendEnableSelfDriving()
+{
+    myConn->sendEnableSelfDriving();
+}
+
+void MainWindow::sendDisableSelfDriving()
+{
+    myConn->sendDisableSelfDriving();
 }
 
 void MainWindow::about()
