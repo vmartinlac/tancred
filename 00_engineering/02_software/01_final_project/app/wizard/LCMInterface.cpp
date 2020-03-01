@@ -1,59 +1,48 @@
 #include <iostream>
-#include <SelfDrivingMessage.hpp>
-#include <ImageMessage.hpp>
-#include <MotorCommandMessage.hpp>
 #include "LCMInterface.h"
-#include "common.h"
 
 LCMInterface::LCMInterface()
 {
-    myLCM.reset(new lcm::LCM(LCM_PROVIDER));
-
-    if(myLCM->good() == false)
-    {
-        std::cout << "Could not initialize LCM!" << std::endl;
-        ::exit(1);
-    }
+    myConn.reset(new yarp::os::Network());
 }
 
 void LCMInterface::run()
 {
-    myLCM->subscribe("Camera", &LCMInterface::onFrameReceived, this);
+    ImagePort port;
+    port.useCallback();
+    port.open("/wizard/camera_input");
 
-    while(isInterruptionRequested() == false)
-    {
-        myLCM->handleTimeout(200);
-    }
-}
+    myConn->connect("/camera", port.getName());
 
-void LCMInterface::onFrameReceived(const lcm::ReceiveBuffer*, const std::string&, const ImageMessage* frame)
-{
-    QImage image = QImage(
-        reinterpret_cast<const uint8_t*>( frame->buffer.data() ),
-        frame->width,
-        frame->height,
-        frame->width,
-        QImage::Format_Grayscale8).copy();
+    QObject::connect(&port, SIGNAL(imageReceived(int,double,QImage)), this, SIGNAL(imageReceived(int,double,QImage)));
 
-    imageReceived(frame->frame_id, frame->timestamp, image);
+    QThread::run();
 }
 
 void LCMInterface::sendEnableSelfDriving()
 {
+    // FIXME
+    /*
     SelfDrivingMessage msg;
     msg.enable = true;
     myLCM->publish("SelfDriving", &msg);
+    */
 }
 
 void LCMInterface::sendDisableSelfDriving()
 {
+    // FIXME
+    /*
     SelfDrivingMessage msg;
     msg.enable = false;
     myLCM->publish("SelfDriving", &msg);
+    */
 }
 
 void LCMInterface::sendMotorCommand(bool fullstop, double steering, double speed)
 {
+    // FIXME
+    /*
     MotorCommandMessage msg;
 
     msg.fullstop = fullstop;
@@ -61,5 +50,6 @@ void LCMInterface::sendMotorCommand(bool fullstop, double steering, double speed
     msg.speed = speed;
 
     myLCM->publish("Motors", &msg);
+    */
 }
 

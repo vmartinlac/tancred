@@ -1,23 +1,23 @@
 #include <librealsense2/rs.hpp>
 #include <iostream>
-#include <lcm/lcm-cpp.hpp>
-#include <ImageMessage.hpp>
-#include <common.h>
+#include <yarp/os/BufferedPort.h>
+#include <yarp/os/Network.h>
+#include <ImageMessage.h>
+
+#define IMAGE_WIDTH 640
+#define IMAGE_HEIGHT 480
 
 int main(int num_args, char** args)
 {
-    lcm::LCM conn(LCM_PROVIDER);
+    yarp::os::Network yarp;
+    yarp::os::BufferedPort<ImageMessage> port;
 
-    if(conn.good() == false)
-    {
-        std::cout << "Could not connect to LCM!" << std::endl;
-        exit(1);
-    }
+    port.open("/camera");
 
     rs2::pipeline pipeline;
 
     rs2::config config;
-    config.enable_stream(RS2_STREAM_COLOR, -1, 640, 480, RS2_FORMAT_RGB8);
+    config.enable_stream(RS2_STREAM_COLOR, -1, IMAGE_WIDTH, IMAGE_HEIGHT, RS2_FORMAT_YUYV);
 
     std::cout << "Starting video pipeline..." << std::endl;
     pipeline.start(config);
@@ -31,25 +31,30 @@ int main(int num_args, char** args)
 
         if(image)
         {
-            ImageMessage msg;
-
-            msg.frame_id = image.get_frame_number();
-            msg.timestamp = image.get_timestamp();
-            msg.width = image.get_width();
-            msg.height = image.get_height();
-            msg.encoding = 0;
-            msg.buffer_size = image.get_width()*image.get_height();
-            msg.buffer.resize(msg.buffer_size);
-            //memcpy(msg.buffer.data(), image.get_data(), msg.buffer_size);
-            for(int i=0; i<480; i++)
+            if( image.get_width() != IMAGE_WIDTH || image.get_height() != IMAGE_HEIGHT )
             {
-                for(int j=0; j<640; j++)
+                std::cerr << "Internal error!" << std::endl;
+                exit(1);
+            }
+
+            const char* data = reinterpret_cast<const char*>(image.get_data());
+
+            ImageMessage& msg = port.prepare();
+
+            msg.frameid = image.get_frame_number();
+            msg.timestamp = image.get_timestamp();
+            msg.width = IMAGE_WIDTH;
+            msg.height = IMAGE_HEIGHT;
+            msg.data.resize(IMAGE_WIDTH*IMAGE_HEIGHT);
+            for(int i=0; i<IMAGE_HEIGHT; i++)
+            {
+                for(int j=0; j<IMAGE_WIDTH; j++)
                 {
-                    msg.buffer[i*640+j] = reinterpret_cast<const uint8_t*>(image.get_data())[640*3*i + 3*j + 0];
+                    msg.data[IMAGE_WIDTH*i+j] = data[2*i*IMAGE_WIDTH+2*j];
                 }
             }
 
-            conn.publish("Camera", &msg);
+            port.write(true);
         }
     }
 

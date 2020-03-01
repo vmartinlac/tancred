@@ -17,7 +17,7 @@ int main(int num_args, char** args)
     const int ret = app.exec();
     delete w;
 
-    lcm_thread->requestInterruption();
+    lcm_thread->exit();
     lcm_thread->wait();
     delete lcm_thread;
 

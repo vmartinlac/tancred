@@ -1,6 +1,0 @@
-#include <vector>
-
-void tmp()
-{
-}
-

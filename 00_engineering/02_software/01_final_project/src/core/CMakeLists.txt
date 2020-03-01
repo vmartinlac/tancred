@@ -2,13 +2,16 @@
 add_library(
     tancred_core
     SHARED
-    common.h
-    tmp.cpp)
+    MotorsMessage.h
+    MotorsMessage.cpp
+    ImageMessage.h
+    ImageMessage.cpp)
 
 target_link_libraries(
     tancred_core
     PUBLIC
-    tancred_communication
+    YARP::YARP_os
+    YARP::YARP_init
     dlib::dlib)
 
 target_include_directories(
