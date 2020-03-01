@@ -8,16 +8,16 @@
 LCMInterface::LCMInterface()
 {
     myLCM.reset(new lcm::LCM(LCM_PROVIDER));
+
+    if(myLCM->good() == false)
+    {
+        std::cout << "Could not initialize LCM!" << std::endl;
+        ::exit(1);
+    }
 }
 
 void LCMInterface::run()
 {
-    if(myLCM->good() == false)
-    {
-        std::cout << "Could not initialize LCM!" << std::endl;
-        exit(1);
-    }
-
     myLCM->subscribe("Camera", &LCMInterface::onFrameReceived, this);
 
     while(isInterruptionRequested() == false)

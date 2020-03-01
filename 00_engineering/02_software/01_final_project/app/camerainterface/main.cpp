@@ -2,7 +2,7 @@
 #include <iostream>
 #include <lcm/lcm-cpp.hpp>
 #include <ImageMessage.hpp>
-#include "common.h"
+#include <common.h>
 
 int main(int num_args, char** args)
 {
