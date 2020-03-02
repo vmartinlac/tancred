@@ -3,9 +3,8 @@
 
 #include <QLabel>
 #include <QMainWindow>
-#include "LCMInterface.h"
+#include "RobotInterface.h"
 #include "VideoWidget.h"
-#include "ControllerWidget.h"
 
 class MainWindow : public QMainWindow
 {
@@ -13,20 +12,19 @@ class MainWindow : public QMainWindow
 
 public:
 
-    MainWindow(LCMInterface* conn, QWidget* w=nullptr);
+    MainWindow(RobotInterface* conn, QWidget* w=nullptr);
 
     ~MainWindow() override = default;
 
 protected slots:
 
     void about();
-    void sendEnableSelfDriving();
-    void sendDisableSelfDriving();
+    void sendEnableAutoPilot();
+    void sendDisableAutoPilot();
 
 protected:
 
-    LCMInterface* myConn;
+    RobotInterface* myConn;
     VideoWidget* myVideo;
-    ControllerWidget* myController;
 };
 

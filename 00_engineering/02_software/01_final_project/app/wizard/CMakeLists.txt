@@ -1,10 +1,8 @@
 
 add_executable(
     tancred_wizard
-    ControllerWidget.h
-    ControllerWidget.cpp
-    LCMInterface.h
-    LCMInterface.cpp
+    RobotInterface.h
+    RobotInterface.cpp
     MainWindow.h
     MainWindow.cpp
     VideoWidget.h

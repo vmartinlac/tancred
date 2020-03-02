@@ -6,7 +6,7 @@
 #include <QWidget>
 #include <QPaintEvent>
 #include <QMouseEvent>
-#include "LCMInterface.h"
+#include "RobotInterface.h"
 
 class VideoWidget : public QWidget
 {
@@ -23,7 +23,7 @@ public:
 
 public:
 
-    VideoWidget(LCMInterface* video, QWidget* parent=nullptr);
+    VideoWidget(RobotInterface* video, QWidget* parent=nullptr);
     ~VideoWidget();
 
 public slots:
@@ -43,7 +43,7 @@ protected:
 
 protected:
 
-    LCMInterface* myConn;
+    RobotInterface* myConn;
     Mode myMode;
     bool myHasNewImage;
     QImage myImage;

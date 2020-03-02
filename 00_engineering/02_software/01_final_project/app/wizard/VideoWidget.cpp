@@ -3,7 +3,7 @@
 #include <QPixmap>
 #include "VideoWidget.h"
 
-VideoWidget::VideoWidget(LCMInterface* conn, QWidget* parent) : QWidget(parent)
+VideoWidget::VideoWidget(RobotInterface* conn, QWidget* parent) : QWidget(parent)
 {
     myConn = conn;
     myMode = MODE_SILENT;
