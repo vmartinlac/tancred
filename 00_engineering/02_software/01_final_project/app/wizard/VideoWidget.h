@@ -33,13 +33,14 @@ public slots:
     void setModeToDriving();
     void setModeToRecording();
     void onImageReceived(int frameid, double timestamp, QImage image);
+    void sendMotorsCommand();
 
 protected:
 
-    void paintEvent(QPaintEvent* ev);
-    void mouseMoveEvent(QMouseEvent*);
-    void mouseDownEvent(QMouseEvent*);
-    void mouseUpEvent(QMouseEvent*);
+    void paintEvent(QPaintEvent* ev) override;
+    void mouseMoveEvent(QMouseEvent*) override;
+    void mousePressEvent(QMouseEvent*) override;
+    void mouseReleaseEvent(QMouseEvent*) override;
 
 protected:
 
@@ -47,6 +48,12 @@ protected:
     Mode myMode;
     bool myHasNewImage;
     QImage myImage;
-    QTimer* myTimer;
+    QTimer* myImageTimer;
+    QTimer* myMotorsTimer;
+    bool myStop;
+    double myCommandSteering;
+    double myCommandSpeed;
+    int mySequenceNumber;
+    int myTimeToLive;
 };
 

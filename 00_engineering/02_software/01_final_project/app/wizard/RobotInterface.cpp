@@ -30,6 +30,7 @@ RobotInterface::RobotInterface() :
 {
 
     myMotorsPort.open("/wizard/motors_output");
+    myAutopilotPort.open("/wizard/autopilot_output");
     myImagePort.open("/wizard/image_input");
     myImagePort.useCallback(myImageCallback);
 
@@ -38,39 +39,33 @@ RobotInterface::RobotInterface() :
 
 RobotInterface::~RobotInterface()
 {
+    myAutopilotPort.close();
     myImagePort.close();
     myMotorsPort.close();
 }
 
 void RobotInterface::sendEnableAutoPilot()
 {
-    std::cout << "Not implemented!" << std::endl;
-    // FIXME
-    /*
-    SelfDrivingMessage msg;
+    AutopilotMessage& msg = myAutopilotPort.prepare();
     msg.enable = true;
-    myLCM->publish("SelfDriving", &msg);
-    */
+    myAutopilotPort.write();
 }
 
 void RobotInterface::sendDisableAutoPilot()
 {
-    std::cout << "Not implemented!" << std::endl;
-    // FIXME
-    /*
-    SelfDrivingMessage msg;
+    AutopilotMessage& msg = myAutopilotPort.prepare();
     msg.enable = false;
-    myLCM->publish("SelfDriving", &msg);
-    */
+    myAutopilotPort.write();
 }
 
-void RobotInterface::sendMotorCommand(bool stop, double steering, double speed)
+void RobotInterface::sendMotorCommand(bool stop, double steering, double speed, int sequence_number)
 {
     MotorsMessage& msg = myMotorsPort.prepare();
 
     msg.stop = stop;
     msg.steering = steering;
     msg.speed = speed;
+    msg.sequence_number = sequence_number;
 
     myMotorsPort.write();
 }

@@ -5,15 +5,11 @@
 #include <cstdint>
 #include <yarp/os/Portable.h>
 
-class MotorsMessage : public yarp::os::Portable
+class AutopilotMessage : public yarp::os::Portable
 {
 public:
 
-    bool stop;
-    double steering;
-    double speed;
-    int sequence_number;
-    int time_to_live;
+    bool enable;
 
 public:
 

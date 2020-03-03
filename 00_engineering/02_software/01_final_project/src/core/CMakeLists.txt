@@ -4,6 +4,8 @@ add_library(
     SHARED
     MotorsMessage.h
     MotorsMessage.cpp
+    AutopilotMessage.h
+    AutopilotMessage.cpp
     ImageMessage.h
     ImageMessage.cpp)
 

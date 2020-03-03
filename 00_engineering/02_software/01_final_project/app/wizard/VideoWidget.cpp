@@ -8,14 +8,22 @@ VideoWidget::VideoWidget(RobotInterface* conn, QWidget* parent) : QWidget(parent
     myConn = conn;
     myMode = MODE_SILENT;
     myHasNewImage = false;
-    myTimer = new QTimer(this);
-    connect(myTimer, SIGNAL(timeout()), this, SLOT(refresh()));
+    myImageTimer = new QTimer(this);
+    myMotorsTimer = new QTimer(this);
+    connect(myImageTimer, SIGNAL(timeout()), this, SLOT(refresh()));
+    connect(myMotorsTimer, SIGNAL(timeout()), this, SLOT(sendMotorsCommand()));
+
+    myStop = true;
+    myCommandSteering = 0.0;
+    myCommandSpeed = 0.0;
+    mySequenceNumber = 0;
 
     setFocusPolicy(Qt::StrongFocus);
 
     setMinimumSize(640, 480);
 
-    myTimer->start(1000/30);
+    myImageTimer->start(1000/30);
+    myMotorsTimer->start(400);
 
     connect(
         myConn,
@@ -23,6 +31,11 @@ VideoWidget::VideoWidget(RobotInterface* conn, QWidget* parent) : QWidget(parent
         this,
         SLOT(onImageReceived(int,double,QImage)),
         Qt::QueuedConnection);
+}
+
+void VideoWidget::sendMotorsCommand()
+{
+    myConn->sendMotorCommand(myStop, myCommandSteering, myCommandSpeed, mySequenceNumber);
 }
 
 void VideoWidget::onImageReceived(int frameid, double timestamp, QImage image)
@@ -104,14 +117,28 @@ void VideoWidget::paintEvent(QPaintEvent* ev)
 
 void VideoWidget::mouseMoveEvent(QMouseEvent*)
 {
+    // TODO
+
+    sendMotorsCommand();
+    update();
 }
 
-void VideoWidget::mouseDownEvent(QMouseEvent*)
+void VideoWidget::mousePressEvent(QMouseEvent*)
 {
+    myStop = false;
+    // TODO
+
+    sendMotorsCommand();
+    update();
 }
 
-void VideoWidget::mouseUpEvent(QMouseEvent*)
+void VideoWidget::mouseReleaseEvent(QMouseEvent*)
 {
+    myStop = true;
+    // TODO
+
+    sendMotorsCommand();
+    update();
 }
 
 void VideoWidget::setModeToSilent()
