@@ -17,5 +17,4 @@ pkg_check_modules(sqlite3 REQUIRED IMPORTED_TARGET sqlite3)
 
 add_subdirectory(app)
 add_subdirectory(src)
-add_subdirectory(tst)
 
