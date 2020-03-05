@@ -21,7 +21,7 @@ public:
 
     void sendEnableAutoPilot();
     void sendDisableAutoPilot();
-    void sendMotorCommand(bool fullstop, double steering, double speed, int sequence_number);
+    void sendMotorCommand(bool forward, double steering);
 
 signals:
 

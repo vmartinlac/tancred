@@ -9,11 +9,8 @@ class MotorsMessage : public yarp::os::Portable
 {
 public:
 
-    bool stop;
+    bool forward;
     double steering;
-    double speed;
-    int sequence_number;
-    int time_to_live;
 
 public:
 

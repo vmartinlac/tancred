@@ -17,7 +17,6 @@ MainWindow::MainWindow(RobotInterface* conn, QWidget* w) : QMainWindow(w)
     tb->addSeparator();
     QAction* a_silent = tb->addAction("Silent");
     QAction* a_driving = tb->addAction("Driving");
-    QAction* a_recording = tb->addAction("Recording");
     tb->addSeparator();
     QAction* a_about = tb->addAction("About");
     QAction* a_quit = tb->addAction("Quit");
@@ -25,11 +24,9 @@ MainWindow::MainWindow(RobotInterface* conn, QWidget* w) : QMainWindow(w)
     QActionGroup* grp = new QActionGroup(this);
     grp->addAction(a_silent);
     grp->addAction(a_driving);
-    grp->addAction(a_recording);
 
     a_silent->setCheckable(true);
     a_driving->setCheckable(true);
-    a_recording->setCheckable(true);
     a_silent->setChecked(true);
     myVideo->setModeToSilent();
 
@@ -50,7 +47,7 @@ MainWindow::MainWindow(RobotInterface* conn, QWidget* w) : QMainWindow(w)
 
     setCentralWidget(myVideo);
     setWindowTitle("Tancred Wizard");
-    setMinimumSize(320, 200);
+    setMinimumSize(640, 480);
 
     connect( a_start_self_driving, SIGNAL(triggered()), this, SLOT(sendEnableAutoPilot()), Qt::QueuedConnection );
     connect( a_stop_self_driving, SIGNAL(triggered()), this, SLOT(sendDisableAutoPilot()), Qt::QueuedConnection );
@@ -58,7 +55,6 @@ MainWindow::MainWindow(RobotInterface* conn, QWidget* w) : QMainWindow(w)
     connect( a_about, SIGNAL(triggered()), this, SLOT(about()) );
     connect( a_silent, SIGNAL(triggered()), myVideo, SLOT(setModeToSilent()) );
     connect( a_driving, SIGNAL(triggered()), myVideo, SLOT(setModeToDriving()) );
-    connect( a_recording, SIGNAL(triggered()), myVideo, SLOT(setModeToRecording()) );
 }
 
 void MainWindow::sendEnableAutoPilot()

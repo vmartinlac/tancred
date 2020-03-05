@@ -1,5 +1,5 @@
 
 #pragma once
 
-#define MOTORS_COMMAND_TTL 500
+#define MOTOR_COMMAND_TTL_MS 500
 

@@ -1,6 +1,8 @@
 #include <iostream>
+#include <cmath>
 #include <QPainter>
 #include <QPixmap>
+#include <constants.h>
 #include "VideoWidget.h"
 
 VideoWidget::VideoWidget(RobotInterface* conn, QWidget* parent) : QWidget(parent)
@@ -13,17 +15,13 @@ VideoWidget::VideoWidget(RobotInterface* conn, QWidget* parent) : QWidget(parent
     connect(myImageTimer, SIGNAL(timeout()), this, SLOT(refresh()));
     connect(myMotorsTimer, SIGNAL(timeout()), this, SLOT(sendMotorsCommand()));
 
-    myStop = true;
+    myCommandForward = false;
     myCommandSteering = 0.0;
-    myCommandSpeed = 0.0;
-    mySequenceNumber = 0;
 
     setFocusPolicy(Qt::StrongFocus);
 
-    setMinimumSize(640, 480);
-
     myImageTimer->start(1000/30);
-    myMotorsTimer->start(400);
+    myMotorsTimer->start(MOTOR_COMMAND_TTL_MS/2);
 
     connect(
         myConn,
@@ -35,7 +33,10 @@ VideoWidget::VideoWidget(RobotInterface* conn, QWidget* parent) : QWidget(parent
 
 void VideoWidget::sendMotorsCommand()
 {
-    myConn->sendMotorCommand(myStop, myCommandSteering, myCommandSpeed, mySequenceNumber);
+    if(myMode == MODE_DRIVING)
+    {
+        myConn->sendMotorCommand(myCommandForward, myCommandSteering);
+    }
 }
 
 void VideoWidget::onImageReceived(int frameid, double timestamp, QImage image)
@@ -69,23 +70,20 @@ void VideoWidget::paintEvent(QPaintEvent* ev)
         painter.eraseRect(painter.viewport());
     }
 
-    if(myImage.isNull() == false && myImage.width() > 0 && myImage.height() > 0)
-    {
-        const int margin = 20;
+    const int margin = 20;
 
+    if(myImage.isNull() == false && myImage.width() >= 2*margin && myImage.height() >= 2*margin)
+    {
         double scale = 1.0;
         scale = std::min<double>( scale, double(width()-2*margin) / double(myImage.width()) );
         scale = std::min<double>( scale, double(height()-2*margin) / double(myImage.height()) );
 
         if( std::min<double>(scale*myImage.width(), scale*myImage.height()) > 30.0 )
         {
-
-            const double deltax = width()*0.5 - myImage.width()*scale*0.5;
-            const double deltay = height()*0.5 - myImage.height()*scale*0.5;
-
-            QTransform transform =
+            const QTransform transform =
+                QTransform::fromTranslate(-myImage.width()/2, -myImage.height()/2) *
                 QTransform::fromScale(scale, scale) *
-                QTransform::fromTranslate(deltax, deltay);
+                QTransform::fromTranslate(width()/2, height()/2);
 
             painter.setTransform(transform);
             painter.drawImage(0, 0, myImage);
@@ -104,41 +102,73 @@ void VideoWidget::paintEvent(QPaintEvent* ev)
         case MODE_DRIVING:
             str = "DRIVING";
             break;
-        case MODE_RECORDING:
-            str = "RECORDING";
-            break;
         }
 
         const int margin = 10;
         painter.setPen(Qt::white);
         painter.drawText( QPoint(margin, painter.fontMetrics().height()+margin), str );
     }
+
+    {
+        const double l = 0.2*std::min<int>(width(), height());
+        const int border = 0;
+        const int radius = 8;
+
+        QColor col( (myCommandForward) ? Qt::green : Qt::yellow );
+
+        QPen p;
+        p.setColor(col);
+        p.setWidth(3.0);
+        painter.setPen(p);
+        painter.drawLine(
+            QPoint(width()/2, height() - border),
+            QPoint(width()/2+l*sin(myCommandSteering), height() - border - l*cos(myCommandSteering)));
+        painter.setBrush(col);
+        painter.drawEllipse(QPoint(width()/2, height()-border), radius, radius);
+    }
 }
 
-void VideoWidget::mouseMoveEvent(QMouseEvent*)
+double VideoWidget::convertLocationToSteering(const QPoint& pt)
 {
-    // TODO
-
-    sendMotorsCommand();
-    update();
+    const double dx = pt.x() - width()/2;
+    const double dy = height()/2;
+    return std::atan(dx/dy);;
 }
 
-void VideoWidget::mousePressEvent(QMouseEvent*)
+void VideoWidget::mouseMoveEvent(QMouseEvent* ev)
 {
-    myStop = false;
-    // TODO
+    if(myMode == MODE_DRIVING)
+    {
+        myCommandForward = true;
+        myCommandSteering = convertLocationToSteering(ev->pos());
 
-    sendMotorsCommand();
-    update();
+        sendMotorsCommand();
+        update();
+    }
+}
+
+void VideoWidget::mousePressEvent(QMouseEvent* ev)
+{
+    if(myMode == MODE_DRIVING)
+    {
+        myCommandForward = true;
+        myCommandSteering = convertLocationToSteering(ev->pos());
+
+        sendMotorsCommand();
+        update();
+    }
 }
 
 void VideoWidget::mouseReleaseEvent(QMouseEvent*)
 {
-    myStop = true;
-    // TODO
+    if(myMode == MODE_DRIVING)
+    {
+        myCommandForward = false;
+        //myCommandSteering = 0.0;
 
-    sendMotorsCommand();
-    update();
+        sendMotorsCommand();
+        update();
+    }
 }
 
 void VideoWidget::setModeToSilent()
@@ -150,12 +180,6 @@ void VideoWidget::setModeToSilent()
 void VideoWidget::setModeToDriving()
 {
     myMode = MODE_DRIVING;
-    update();
-}
-
-void VideoWidget::setModeToRecording()
-{
-    myMode = MODE_RECORDING;
     update();
 }
 

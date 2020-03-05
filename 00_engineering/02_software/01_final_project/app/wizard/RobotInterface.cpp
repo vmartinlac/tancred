@@ -58,14 +58,12 @@ void RobotInterface::sendDisableAutoPilot()
     myAutopilotPort.write();
 }
 
-void RobotInterface::sendMotorCommand(bool stop, double steering, double speed, int sequence_number)
+void RobotInterface::sendMotorCommand(bool forward, double steering)
 {
     MotorsMessage& msg = myMotorsPort.prepare();
 
-    msg.stop = stop;
+    msg.forward = forward;
     msg.steering = steering;
-    msg.speed = speed;
-    msg.sequence_number = sequence_number;
 
     myMotorsPort.write();
 }

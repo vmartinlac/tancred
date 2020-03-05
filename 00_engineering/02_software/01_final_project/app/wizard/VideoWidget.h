@@ -17,8 +17,7 @@ public:
     enum Mode
     {
         MODE_SILENT,
-        MODE_DRIVING,
-        MODE_RECORDING
+        MODE_DRIVING
     };
 
 public:
@@ -31,7 +30,6 @@ public slots:
     void refresh();
     void setModeToSilent();
     void setModeToDriving();
-    void setModeToRecording();
     void onImageReceived(int frameid, double timestamp, QImage image);
     void sendMotorsCommand();
 
@@ -42,6 +40,8 @@ protected:
     void mousePressEvent(QMouseEvent*) override;
     void mouseReleaseEvent(QMouseEvent*) override;
 
+    double convertLocationToSteering(const QPoint& pt);
+
 protected:
 
     RobotInterface* myConn;
@@ -50,10 +50,7 @@ protected:
     QImage myImage;
     QTimer* myImageTimer;
     QTimer* myMotorsTimer;
-    bool myStop;
+    bool myCommandForward;
     double myCommandSteering;
-    double myCommandSpeed;
-    int mySequenceNumber;
-    int myTimeToLive;
 };
 

@@ -32,7 +32,7 @@ int main(int num_args, char** args)
 
         if(msg)
         {
-            file << "CMD " << msg->stop << " " << msg->steering << " " << msg->speed << std::endl;
+            file << "CMD " << msg->forward << " " << msg->steering << std::endl;
         }
     }
 
