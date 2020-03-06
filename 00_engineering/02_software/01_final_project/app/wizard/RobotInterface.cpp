@@ -33,8 +33,6 @@ RobotInterface::RobotInterface() :
     myAutopilotPort.open("/wizard/autopilot_output");
     myImagePort.open("/wizard/image_input");
     myImagePort.useCallback(myImageCallback);
-
-    myConn.connect("/camera", myImagePort.getName());
 }
 
 RobotInterface::~RobotInterface()

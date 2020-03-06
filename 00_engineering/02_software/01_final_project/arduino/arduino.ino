@@ -30,39 +30,36 @@ void setup()
 
 void loop()
 {
-  String s = Serial.readStringUntil(' ');
+  String s = Serial.readStringUntil('\n');
 
-  if(s.equals("direction-left"))
+  if(s.length() >= 2)
   {
-    servo.write(90 - DIRECTION_AMPLITUDE);
-  }
-  else if(s.equals("direction-front"))
-  {
-    servo.write(90);
-  }
-  else if(s.equals("direction-right"))
-  {
-    servo.write(90 + DIRECTION_AMPLITUDE);
-  }
-  else if(s.equals("speed-stop"))
-  {
-    digitalWrite(PIN_LEN, LOW);
-    digitalWrite(PIN_REN, LOW);
-    analogWrite(PIN_LPWM, 0);
-    analogWrite(PIN_RPWM, 0);
-  }
-  else if(s.equals("speed-forward"))
-  {
-    digitalWrite(PIN_LEN, HIGH);
-    digitalWrite(PIN_REN, HIGH);
-    analogWrite(PIN_LPWM, SPEED_AMPLITUDE);
-    analogWrite(PIN_RPWM, 0);
-  }
-  else if(s.equals("speed-backward"))
-  {
-    digitalWrite(PIN_LEN, HIGH);
-    digitalWrite(PIN_REN, HIGH);
-    analogWrite(PIN_LPWM, 0);
-    analogWrite(PIN_RPWM, SPEED_AMPLITUDE);
+    bool ok = false;
+    
+    if(s[0] == 'R')
+    {
+      digitalWrite(PIN_LEN, HIGH);
+      digitalWrite(PIN_REN, HIGH);
+      analogWrite(PIN_LPWM, SPEED_AMPLITUDE);
+      analogWrite(PIN_RPWM, 0);
+      ok = true;
+    }
+    else if(s[0] == 'S')
+    {
+      digitalWrite(PIN_LEN, LOW);
+      digitalWrite(PIN_REN, LOW);
+      analogWrite(PIN_LPWM, 0);
+      analogWrite(PIN_RPWM, 0);
+      ok = true;
+    }
+    
+    if(ok)
+    {
+      double steering = atof(s.substring(1).c_str()) * 180.0/PI;
+      steering = max(steering, -DIRECTION_AMPLITUDE);
+      steering = min(steering, DIRECTION_AMPLITUDE);
+  
+      servo.write(90 + steering);
+    }
   }
 }

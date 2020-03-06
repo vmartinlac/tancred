@@ -32,7 +32,8 @@ int main(int num_args, char** args)
 
         if(msg)
         {
-            file << "CMD " << msg->forward << " " << msg->steering << std::endl;
+            const char forward = (msg->forward) ? 'R' : 'S';
+            file << forward << msg->steering << std::endl;
         }
     }
 
