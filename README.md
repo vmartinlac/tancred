@@ -8,9 +8,11 @@ Material
 * Conrad Reely Monstertruck RC car
 * Intel Realsense D435 RGBD camera
 * NVidia Jetson Nano
+* Intel Dual Band Wireless-AC 8265
 * Arduino Uno
 * BTS 7960 motor driver
-* Homemade 3d printer platform
+* L298N motor driver
+* Home-made 3d-printed platform
 
 Algorithms
 ----------
@@ -20,9 +22,7 @@ To be determined
 Software Dependencies
 ---------------------
 * dlib
-* LCM (lightweight communication and marshalling)
+* YARP
 * Qt5
 * realsense2
-* sqlite3
-* pytorch
-* cuda
+
