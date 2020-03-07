@@ -54,7 +54,7 @@ int main(int num_args, char** args)
                 }
             }
 
-            port.write(true);
+            port.write();
         }
     }
 
