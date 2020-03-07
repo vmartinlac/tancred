@@ -1,7 +1,10 @@
 
 #pragma once
 
+#include <QDir>
 #include <QObject>
+#include <QTimer>
+#include <sqlite3.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/TypedReaderCallback.h>
 #include <ImageMessage.h>
@@ -17,7 +20,7 @@ public:
     Handler(QObject* parent=nullptr);
     ~Handler();
 
-    void init();
+    void init(const QString& output_directory);
     void finalize();
 
 signals:
@@ -25,10 +28,11 @@ signals:
     void imageMessageReceived(InternalImageMessagePtr);
     void motorsMessageReceived(InternalMotorsMessagePtr);
 
-public slots:
+protected slots:
 
     void receiveImageMessage(InternalImageMessagePtr msg);
     void receiveMotorsMessage(InternalMotorsMessagePtr msg);
+    void checkHearthBeat();
 
 protected:
 
@@ -67,5 +71,21 @@ protected:
 
     MotorsCallback myMotorsCallback;
     ImageCallback myImageCallback;
+    ClockType::time_point myClockReference;
+
+    QDir myDirectory;
+    sqlite3* myDatabase;
+    sqlite3_stmt* myImageStatement;
+    sqlite3_stmt* myMotorsStatement;
+
+    std::atomic<int> myNumImageMessagesToProcess;
+    std::atomic<int> myNumMotorsMessagesToProcess;
+    std::atomic<int> myNumSkippedImageMessages;
+    std::atomic<int> myNumSkippedMotorsMessages;
+
+    int myNextImageId;
+
+    QTimer* myHeartbeatTimer;
+    ClockType::time_point myTimeLast;
 };
 

@@ -1,16 +1,18 @@
 
 add_executable(
     tancred_recorder
-    Constants.h
+    main.cpp
     Handler.cpp
     Handler.h
-    InternalMessages.h
-    main.cpp)
+    Constants.h
+    InternalMessages.h)
 
 target_link_libraries(
     tancred_recorder
     PUBLIC
     tancred_core
-    Qt5::Core
-    Qt5::Sql)
+    opencv_core
+    opencv_imgcodecs
+    PkgConfig::sqlite3
+    Qt5::Core)
 

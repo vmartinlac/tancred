@@ -21,8 +21,9 @@ To be determined
 
 Software Dependencies
 ---------------------
-* dlib
-* YARP
+* OpenCV
 * Qt5
 * realsense2
+* sqlite3
+* YARP
 

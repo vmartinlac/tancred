@@ -13,8 +13,7 @@ target_link_libraries(
     tancred_core
     PUBLIC
     YARP::YARP_os
-    YARP::YARP_init
-    dlib::dlib)
+    YARP::YARP_init)
 
 target_include_directories(
     tancred_core

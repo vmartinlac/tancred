@@ -8,6 +8,12 @@
 
 int main(int num_args, char** args)
 {
+    if(num_args != 2)
+    {
+        std::cout << "Please provide the path to output directory on command line!" << std::endl;
+        exit(1);
+    }
+
     QCoreApplication app(num_args, args);
     yarp::os::Network yarp;
 
@@ -15,7 +21,7 @@ int main(int num_args, char** args)
     qRegisterMetaType<InternalMotorsMessagePtr>();
 
     Handler* handler = new Handler();
-    handler->init();
+    handler->init(args[1]);
 
     const int ret = app.exec();
 
