@@ -12,6 +12,7 @@ find_package(YARP REQUIRED)
 find_package(OpenCV REQUIRED COMPONENTS core imgcodecs imgproc)
 find_package(realsense2 REQUIRED)
 find_package(Qt5 REQUIRED COMPONENTS Widgets Core Gui Sql)
+find_package(Threads REQUIRED)
 
 pkg_check_modules(sqlite3 REQUIRED IMPORTED_TARGET sqlite3)
 pkg_check_modules(vpx REQUIRED IMPORTED_TARGET vpx)

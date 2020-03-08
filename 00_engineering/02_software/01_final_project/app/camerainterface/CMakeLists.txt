@@ -8,6 +8,7 @@ target_link_libraries(
     PUBLIC
     tancred_core
     opencv_imgproc
+    Threads::Threads
     PkgConfig::vpx
     realsense2::realsense2)
 

@@ -175,9 +175,30 @@ int main(int num_args, char** args)
     raw_port.open("/camerainterface/raw_image_output");
     compressed_port.open("/camerainterface/compressed_image_output");
 
-    while(true)
+    // thread allowing the user to request the program to quit.
+
+    volatile bool quit = false;
+    auto thread_proc = [] (volatile bool* q)
     {
-        rs2::frame frame = input.refFrameQueue().wait_for_frame();
+        std::cout << "Press ENTER to quit." << std::endl;
+        getchar();
+        *q = true;
+    };
+
+    std::thread thread(thread_proc, &quit);
+
+    while(quit == false)
+    {
+        rs2::frame frame;
+
+        try
+        {
+            frame = input.refFrameQueue().wait_for_frame(100);
+        }
+        catch(const rs2::error& e)
+        {
+            std::cout << "No frame" << std::endl;
+        }
 
         if(frame && frame.is<rs2::video_frame>())
         {
@@ -197,6 +218,7 @@ int main(int num_args, char** args)
         }
     }
 
+    thread.join();
     raw_port.close();
     compressed_port.close();
     codec.finalize();
