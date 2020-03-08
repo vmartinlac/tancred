@@ -21,6 +21,8 @@ To be determined
 
 Software Dependencies
 ---------------------
+
+* libvpx
 * OpenCV
 * Qt5
 * realsense2

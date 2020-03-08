@@ -9,6 +9,7 @@
 #include <yarp/os/TypedReaderCallback.h>
 #include <ImageMessage.h>
 #include <MotorsMessage.h>
+#include "Constants.h"
 #include "InternalMessages.h"
 
 class Handler : public QObject
@@ -32,7 +33,6 @@ protected slots:
 
     void receiveImageMessage(InternalImageMessagePtr msg);
     void receiveMotorsMessage(InternalMotorsMessagePtr msg);
-    void checkHearthBeat();
 
 protected:
 
@@ -84,8 +84,5 @@ protected:
     std::atomic<int> myNumSkippedMotorsMessages;
 
     int myNextImageId;
-
-    QTimer* myHeartbeatTimer;
-    ClockType::time_point myTimeLast;
 };
 

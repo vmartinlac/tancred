@@ -153,11 +153,6 @@ void Handler::finalize()
     std::cout << "Num skipped motors messages: " << myNumSkippedMotorsMessages << std::endl;
 }
 
-void Handler::checkHearthBeat()
-{
-    ;
-}
-
 void Handler::receiveImageMessage(InternalImageMessagePtr msg)
 {
     std::vector<uint8_t> encoded;

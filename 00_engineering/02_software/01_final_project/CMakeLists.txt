@@ -14,6 +14,7 @@ find_package(realsense2 REQUIRED)
 find_package(Qt5 REQUIRED COMPONENTS Widgets Core Gui Sql)
 
 pkg_check_modules(sqlite3 REQUIRED IMPORTED_TARGET sqlite3)
+pkg_check_modules(vpx REQUIRED IMPORTED_TARGET vpx)
 
 add_subdirectory(app)
 add_subdirectory(src)
