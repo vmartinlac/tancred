@@ -11,27 +11,35 @@ namespace SqlCommands
     static const char* schema[] =
     {
 R"(
+CREATE TABLE IF NOT EXISTS sequences(
+    id INTEGER PRIMARY KEY,
+    datetime TEXT)
+)",
+
+R"(
 CREATE TABLE IF NOT EXISTS motors_messages(
     id INTEGER PRIMARY KEY,
-    local_timestamp FLOAT,
-    forward INTEGER,
+    sequence_id INTEGER,
+    time FLOAT,
     steering FLOAT)
 )",
 
 R"(
 CREATE TABLE IF NOT EXISTS image_messages(
     id INTEGER PRIMARY KEY,
-    local_timestamp FLOAT,
-    frameid INTEGER,
-    timestamp FLOAT,
+    sequence_id INTEGER,
+    time FLOAT,
+    camera_frameid INTEGER,
+    camera_timestamp FLOAT,
     filename STRING)
 )",
 
         nullptr
     };
 
-    static const char* insert_motors_message = "INSERT INTO motors_messages(local_timestamp,forward,steering) VALUES(?,?,?)";
-    static const char* insert_image_message = "INSERT INTO image_messages(local_timestamp,frameid,timestamp,filename) VALUES(?,?,?,?)";
+    static const char* insert_sequence = "INSERT INTO sequences(datetime) VALUES(DATETIME('NOW'))";
+    static const char* insert_motors_message = "INSERT INTO motors_messages(sequence_id,time,steering) VALUES(?,?,?)";
+    static const char* insert_image_message = "INSERT INTO image_messages(sequence_id,time,camera_frameid,camera_timestamp,filename) VALUES(?,?,?,?,?)";
 }
 
 Handler::Handler(QObject* parent) :
@@ -39,8 +47,11 @@ Handler::Handler(QObject* parent) :
     myMotorsCallback(this),
     myImageCallback(this),
     myDatabase(nullptr),
+    mySequenceStatement(nullptr),
     myImageStatement(nullptr),
-    myMotorsStatement(nullptr)
+    myMotorsStatement(nullptr),
+    myInSequence(false),
+    mySequenceId(-1)
 {
 }
 
@@ -63,6 +74,9 @@ void Handler::init(const QString& output_directory)
         myNumMotorsMessagesToProcess = 0;
         myNumSkippedImageMessages = 0;
         myNumSkippedMotorsMessages = 0;
+
+        myInSequence = false;
+        mySequenceId = -1;
 
         myImagePort.open("/recorder/camera_input");
         myMotorsPort.open("/recorder/motors_input");
@@ -128,6 +142,12 @@ void Handler::init(const QString& output_directory)
         err = "Could not create insert_motors_message statement!";
     }
 
+    if(ok)
+    {
+        ok = ( sqlite3_prepare_v2(myDatabase, SqlCommands::insert_sequence, -1, &mySequenceStatement, nullptr) == SQLITE_OK );
+        err = "Could not create insert_sequence statement!";
+    }
+
     if(ok == false)
     {
         std::cout << err << std::endl;
@@ -146,6 +166,9 @@ void Handler::finalize()
     sqlite3_finalize(myMotorsStatement);
     myMotorsStatement = nullptr;
 
+    sqlite3_finalize(mySequenceStatement);
+    mySequenceStatement = nullptr;
+
     sqlite3_close(myDatabase);
     myDatabase = nullptr;
 
@@ -155,101 +178,123 @@ void Handler::finalize()
 
 void Handler::receiveImageMessage(InternalImageMessagePtr msg)
 {
-    std::vector<uint8_t> encoded;
-    QString image_path;
-    QString image_filename;
-    bool ok = true;
-    const char* err = "";
-    int fd = -1;
-
-    // encode image.
-
-    if(ok)
+    if( myInSequence )
     {
-        cv::Mat1b image(msg->height, msg->width, reinterpret_cast<uint8_t*>(msg->data.data()));
+        std::vector<uint8_t> encoded;
+        QString image_path;
+        QString image_filename;
+        bool ok = true;
+        const char* err = "";
+        int fd = -1;
 
-        ok = cv::imencode("png", image, encoded);
-        err = "Could not encode image!";
-    }
+        // encode image.
 
-    // save image on filesystem.
-
-    if(ok)
-    {
-        do
+        if(ok)
         {
-            image_filename = QString("IMG_%1").arg( myNextImageId, 5, 10, QChar('0') );
-            image_path = myDirectory.absoluteFilePath(image_filename);
-            myNextImageId++;
+            cv::Mat1b image(msg->height, msg->width, reinterpret_cast<uint8_t*>(msg->data.data()));
+
+            ok = cv::imencode("png", image, encoded);
+            err = "Could not encode image!";
         }
-        while(myDirectory.exists(image_filename));
-    }
 
-    if(ok)
-    {
-        fd = open(image_path.toUtf8().data(), O_WRONLY|O_SYNC);
-        ok = (fd >= 0);
-        err = "Could not open image file for writing!";
-    }
+        // save image on filesystem.
 
-    if(ok)
-    {
-        ok = ( write(fd, encoded.data(), encoded.size()) == encoded.size() );
-        err = "Could not write image on filesystem!";
-    }
+        if(ok)
+        {
+            do
+            {
+                image_filename = QString("IMG_%1").arg( myNextImageId, 5, 10, QChar('0') );
+                image_path = myDirectory.absoluteFilePath(image_filename);
+                myNextImageId++;
+            }
+            while(myDirectory.exists(image_filename));
+        }
 
-    if(ok)
-    {
-        close(fd);
-        fd = -1;
-    }
+        if(ok)
+        {
+            fd = open(image_path.toUtf8().data(), O_WRONLY|O_SYNC);
+            ok = (fd >= 0);
+            err = "Could not open image file for writing!";
+        }
 
-    // record image in database.
+        if(ok)
+        {
+            ok = ( write(fd, encoded.data(), encoded.size()) == encoded.size() );
+            err = "Could not write image on filesystem!";
+        }
 
-    if(ok)
-    {
-        const double dt = std::chrono::duration_cast<std::chrono::milliseconds>(msg->local_timestamp - myClockReference).count() * 1.0e-3;
+        if(ok)
+        {
+            close(fd);
+            fd = -1;
+        }
 
-        sqlite3_reset(myImageStatement);
+        // record image in database.
 
-        sqlite3_bind_double(myImageStatement, 1, dt);
-        sqlite3_bind_int(myImageStatement, 2, msg->frameid);
-        sqlite3_bind_double(myImageStatement, 3, msg->timestamp);
-        sqlite3_bind_text(myImageStatement, 4, image_filename.toUtf8().data(), -1, SQLITE_TRANSIENT);
+        if(ok)
+        {
+            const double dt = std::chrono::duration_cast<std::chrono::milliseconds>(msg->local_timestamp - myClockReference).count() * 1.0e-3;
 
-        sqlite3_step(myImageStatement);
-    }
+            sqlite3_reset(myImageStatement);
 
-    if(ok)
-    {
-        myNumImageMessagesToProcess--;
-    }
+            sqlite3_bind_int(myImageStatement, 1, mySequenceId);
+            sqlite3_bind_double(myImageStatement, 2, dt);
+            sqlite3_bind_int(myImageStatement, 3, msg->frameid);
+            sqlite3_bind_double(myImageStatement, 4, msg->timestamp);
+            sqlite3_bind_text(myImageStatement, 5, image_filename.toUtf8().data(), -1, SQLITE_TRANSIENT);
 
-    if( fd >= 0 )
-    {
-        close(fd);
-    }
+            sqlite3_step(myImageStatement);
+        }
 
-    if(ok == false)
-    {
-        std::cout << err << std::endl;
-        exit(1);
+        if(ok)
+        {
+            myNumImageMessagesToProcess--;
+        }
+
+        if( fd >= 0 )
+        {
+            close(fd);
+        }
+
+        if(ok == false)
+        {
+            std::cout << err << std::endl;
+            exit(1);
+        }
     }
 }
 
 void Handler::receiveMotorsMessage(InternalMotorsMessagePtr msg)
 {
-    const double dt = std::chrono::duration_cast<std::chrono::milliseconds>(msg->local_timestamp - myClockReference).count() * 1.0e-3;
+    if(msg->forward)
+    {
+        if(myInSequence == false)
+        {
+            myInSequence = true;
 
-    sqlite3_reset(myMotorsStatement);
+            myClockReference = ClockType::now();
 
-    sqlite3_bind_double(myMotorsStatement, 1, dt);
-    sqlite3_bind_int(myMotorsStatement, 2, msg->forward);
-    sqlite3_bind_double(myMotorsStatement, 3, msg->steering);
+            sqlite3_reset(mySequenceStatement);
+            sqlite3_step(mySequenceStatement);
+            mySequenceId = sqlite3_last_insert_rowid(myDatabase);
+        }
 
-    sqlite3_step(myMotorsStatement);
+        const double dt = std::chrono::duration_cast<std::chrono::milliseconds>(msg->local_timestamp - myClockReference).count() * 1.0e-3;
 
-    myNumMotorsMessagesToProcess--;
+        sqlite3_reset(myMotorsStatement);
+
+        sqlite3_bind_int(myMotorsStatement, 1, mySequenceId);
+        sqlite3_bind_double(myMotorsStatement, 2, dt);
+        sqlite3_bind_double(myMotorsStatement, 3, msg->steering);
+
+        sqlite3_step(myMotorsStatement);
+
+        myNumMotorsMessagesToProcess--;
+    }
+    else
+    {
+        myInSequence = false;
+    }
 }
 
 Handler::ImageCallback::ImageCallback(Handler* h)

@@ -14,5 +14,6 @@ target_link_libraries(
     opencv_core
     opencv_imgcodecs
     PkgConfig::sqlite3
+    Threads::Threads
     Qt5::Core)
 

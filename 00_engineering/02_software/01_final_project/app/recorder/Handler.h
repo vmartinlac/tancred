@@ -71,10 +71,11 @@ protected:
 
     MotorsCallback myMotorsCallback;
     ImageCallback myImageCallback;
-    ClockType::time_point myClockReference;
 
     QDir myDirectory;
+
     sqlite3* myDatabase;
+    sqlite3_stmt* mySequenceStatement;
     sqlite3_stmt* myImageStatement;
     sqlite3_stmt* myMotorsStatement;
 
@@ -84,5 +85,9 @@ protected:
     std::atomic<int> myNumSkippedMotorsMessages;
 
     int myNextImageId;
+    bool myInSequence;
+    int mySequenceId;
+    //QDir mySequenceDirectory;
+    ClockType::time_point myClockReference;
 };
 
