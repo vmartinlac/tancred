@@ -4,6 +4,37 @@
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Network.h>
 
+class Glue : public yarp::os::TypedReaderCallback<MotorsMessage>
+{
+public:
+
+    void init(const std::string& device)
+    {
+        myFile.open(device);
+
+        if( myFile.is_open() == false )
+        {
+            std::cerr << "Could not open arduino interface!" << std::endl;
+            exit(1);
+        }
+    }
+
+    void finalize()
+    {
+        myFile.close();
+    }
+
+    void onRead(MotorsMessage& msg)
+    {
+        const char forward = (msg.forward) ? 'R' : 'S';
+        myFile << forward << msg.steering << std::endl;
+    }
+
+protected:
+
+    std::ofstream myFile;
+};
+
 int main(int num_args, char** args)
 {
     if(num_args != 2)
@@ -12,32 +43,21 @@ int main(int num_args, char** args)
         exit(1);
     }
 
-    std::ofstream file;
-    file.open(args[1]);
+    Glue glue;
 
-    if( file.is_open() == false )
-    {
-        std::cerr << "Could not open arduino interface!" << std::endl;
-        exit(1);
-    }
+    glue.init(args[1]);
 
     yarp::os::Network conn;
 
     yarp::os::BufferedPort<MotorsMessage> port;
-    port.open("/motors");
+    port.open("/motorsinterface/input");
+    port.useCallback(glue);
 
-    while(true)
-    {
-        MotorsMessage* msg = port.read();
+    std::cout << "Press ENTER to quit" << std::endl;
+    getchar();
 
-        if(msg)
-        {
-            const char forward = (msg->forward) ? 'R' : 'S';
-            file << forward << msg->steering << std::endl;
-        }
-    }
-
-    file.close();
+    port.close();
+    glue.finalize();
     
     return 0;
 }
