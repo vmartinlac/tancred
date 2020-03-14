@@ -1,4 +1,5 @@
 #include <chrono>
+#include <cstring>
 #include <iostream>
 #include <thread>
 #include <librealsense2/rs.hpp>
@@ -82,6 +83,12 @@ public:
 
     void init()
     {
+        myMinKeyFramePeriod = 30;
+        myPreKeyFrame = 0;
+
+        myHasFirstFrameNumber = false;
+        myFirstFrameNumber = 0;
+
         vpx_img_alloc(&myImage, VPX_IMG_FMT_I420, IMAGE_WIDTH, IMAGE_HEIGHT, 1);
 
         myInterface = vpx_codec_vp9_cx();
@@ -90,21 +97,95 @@ public:
 
         myConfig.g_w = IMAGE_WIDTH;
         myConfig.g_h = IMAGE_HEIGHT;
-        myConfig.kf_mode = VPX_KF_FIXED;
-        //myConfig.kf_max_dist = IMAGE_FPS;
-        //config.g_timebase.numerator = 1;
-        //config.g_timebase.denominator = IMAGE_FPS; // TODO: use what realsense2 provides.
+        myConfig.g_error_resilient = 1;
+        myConfig.g_timebase.num = 1;
+        myConfig.g_timebase.den = IMAGE_FPS;
 
         vpx_codec_enc_init(&myContext, myInterface, &myConfig, 0);
     }
 
     void send(rs2::video_frame frame, yarp::os::BufferedPort<ImageMessage>& port)
     {
-        // TODO copy rs2 frame to vpx image.
+        // determine flags.
 
         vpx_enc_frame_flags_t flags = 0;
-        vpx_codec_encode(&myContext, &myImage, myNextPts, 1, flags, VPX_DL_REALTIME);
-        myNextPts++;
+
+        if(myPreKeyFrame > 0)
+        {
+            myPreKeyFrame--;
+        }
+        else
+        {
+            myPreKeyFrame = myMinKeyFramePeriod-1;
+            flags |= VPX_EFLAG_FORCE_KF;
+        }
+
+        // determine presentation timestamp.
+
+        if(myHasFirstFrameNumber == false)
+        {
+            myFirstFrameNumber = frame.get_frame_number();
+            myHasFirstFrameNumber = true;
+        }
+
+        const vpx_codec_pts_t pts = frame.get_frame_number() - myFirstFrameNumber;
+
+        // Copy frame data to vpx image.
+
+        {
+            /*
+            std::cout << myImage.d_w << ' ' << myImage.d_h << std::endl;
+            std::cout << myImage.x_chroma_shift << ' ' << myImage.y_chroma_shift << std::endl;
+            std::cout << myImage.stride[0] << ' ' << myImage.stride[1] << ' ' << myImage.stride[2] << std::endl;
+            std::cout << std::endl;
+            */
+
+            // copy Y.
+            for(int i=0; i<IMAGE_HEIGHT; i++)
+            {
+                const uint8_t* pfrom = static_cast<const uint8_t*>( frame.get_data() ) + i*frame.get_stride_in_bytes();
+                uint8_t* pto = myImage.planes[VPX_PLANE_Y] + i*myImage.stride[VPX_PLANE_Y];
+
+                for(int j=0; j<IMAGE_WIDTH; j++)
+                {
+                    *pto = *pfrom;
+                    pfrom += 2;
+                    pto++;
+                }
+            }
+
+            // copy U and V.
+            for(int i=0; i<IMAGE_HEIGHT/2; i++)
+            {
+                const uint8_t* p0 = static_cast<const uint8_t*>( frame.get_data() ) + (2*i+0) * frame.get_stride_in_bytes() + 1;
+                const uint8_t* p1 = static_cast<const uint8_t*>( frame.get_data() ) + (2*i+1) * frame.get_stride_in_bytes() + 1;
+                uint8_t* pu = myImage.planes[VPX_PLANE_U] + i*myImage.stride[VPX_PLANE_U];
+                uint8_t* pv = myImage.planes[VPX_PLANE_V] + i*myImage.stride[VPX_PLANE_V];
+
+                for(int j=0; j<IMAGE_WIDTH/2; j++)
+                {
+                    *pu = static_cast<uint8_t>( 0.5f * ( float(*p0) + float(*p1) ) );
+                    pu++;
+                    p0 += 2;
+                    p1 += 2;
+
+                    *pv = static_cast<uint8_t>( 0.5f * ( float(*p0) + float(*p1) ) );
+                    pv++;
+                    p0 += 2;
+                    p1 += 2;
+                }
+            }
+        }
+
+        // encode frame.
+
+        vpx_codec_err_t error = vpx_codec_encode(&myContext, &myImage, pts, 1, flags, VPX_DL_REALTIME);
+        if(error != VPX_CODEC_OK)
+        {
+            std::cout << "Error while encoding frame!" << std::endl;
+        }
+
+        // send messages.
 
         vpx_codec_iter_t iter = nullptr;
         const vpx_codec_cx_pkt_t* pkt = nullptr;
@@ -112,8 +193,15 @@ public:
         {
             if( pkt->kind == VPX_CODEC_CX_FRAME_PKT )
             {
-                // TODO: send packet.
-                std::cout << "TODO: send video packet" << std::endl;
+                ImageMessage& msg = port.prepare();
+                msg.frameid = frame.get_frame_number();
+                msg.timestamp = frame.get_timestamp();
+                msg.width = IMAGE_WIDTH;
+                msg.height = IMAGE_HEIGHT;
+                msg.format = ImageMessage::FORMAT_VP9;
+                msg.data.resize(pkt->data.frame.sz);
+                memcpy(msg.data.data(), pkt->data.frame.buf, pkt->data.frame.sz);
+                port.write();
             }
         }
     }
@@ -125,7 +213,12 @@ public:
 
 protected:
 
-    vpx_codec_pts_t myNextPts;
+    bool myHasFirstFrameNumber;
+    unsigned long long myFirstFrameNumber;
+
+    int myMinKeyFramePeriod;
+    int myPreKeyFrame;
+
     vpx_image_t myImage;
     vpx_codec_iface_t* myInterface;
     vpx_codec_ctx_t myContext;
@@ -142,6 +235,7 @@ void send_raw_image(rs2::video_frame image, yarp::os::BufferedPort<ImageMessage>
     msg.timestamp = image.get_timestamp();
     msg.width = IMAGE_WIDTH;
     msg.height = IMAGE_HEIGHT;
+    msg.format = ImageMessage::FORMAT_GRAYSCALE8;
     msg.data.resize(IMAGE_WIDTH*IMAGE_HEIGHT);
     for(int i=0; i<IMAGE_HEIGHT; i++)
     {
@@ -206,14 +300,14 @@ int main(int num_args, char** args)
 
             if(video_frame)
             {
-                if( video_frame.get_width() != IMAGE_WIDTH || video_frame.get_height() != IMAGE_HEIGHT )
+                if( video_frame.get_width() != IMAGE_WIDTH || video_frame.get_height() != IMAGE_HEIGHT || video_frame.get_profile().format() != RS2_FORMAT_YUYV )
                 {
                     std::cerr << "Internal error!" << std::endl;
                     exit(1);
                 }
 
                 send_raw_image(video_frame, raw_port);
-                //codec.send(video_frame, compressed_port);
+                codec.send(video_frame, compressed_port);
             }
         }
     }

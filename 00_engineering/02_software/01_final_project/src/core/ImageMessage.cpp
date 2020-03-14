@@ -8,6 +8,7 @@ bool ImageMessage::read(yarp::os::ConnectionReader& reader)
     timestamp = reader.expectDouble();
     width = reader.expectInt32();
     height = reader.expectInt32();
+    format = reader.expectInt32();
     data.resize(width*height);
     reader.expectBlock(data.data(), width*height);
 
@@ -24,6 +25,7 @@ bool ImageMessage::write(yarp::os::ConnectionWriter& writer) const
         writer.appendDouble(timestamp);
         writer.appendInt32(width);
         writer.appendInt32(height);
+        writer.appendInt32(format);
         writer.appendBlock(data.data(), data.size());
         ret = true;
     }

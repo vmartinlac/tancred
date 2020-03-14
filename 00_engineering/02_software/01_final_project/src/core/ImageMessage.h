@@ -9,10 +9,19 @@ class ImageMessage : public yarp::os::Portable
 {
 public:
 
+    enum Format
+    {
+        FORMAT_GRAYSCALE8,
+        FORMAT_VP9
+    };
+
+public:
+
     int frameid;
     double timestamp;
     int width;
     int height;
+    int format;
     std::vector<char> data;
 
 public:
