@@ -342,7 +342,7 @@ Handler::MotorsCallback::MotorsCallback(Handler* h)
 
 void Handler::MotorsCallback::onRead(MotorsMessage& msg)
 {
-    if(myHandler->myNumMotorsMessagesToProcess >= 20000)
+    if(myHandler->myNumMotorsMessagesToProcess >= 100000)
     {
         myHandler->myNumSkippedMotorsMessages++;
     }
