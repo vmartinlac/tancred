@@ -16,6 +16,6 @@ target_link_libraries(
     tancred_wizard
     PUBLIC
     tancred_core
-    PkgConfig::vpx
+    PkgConfig::libavcodec
     Qt5::Widgets)
 

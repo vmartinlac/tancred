@@ -1,4 +1,5 @@
 #include <iostream>
+#include "constants.h"
 #include "RobotInterface.h"
 
 RobotInterface::ImageCallback::ImageCallback(RobotInterface* interface)
@@ -13,16 +14,29 @@ void RobotInterface::ImageCallback::onRead(ImageMessage& msg)
     const int width = msg.width;
     const int height = msg.height;
 
-    QImage image(width, height, QImage::Format_Grayscale8);
-    for(int i=0; i<height; i++)
+    QImage image;
+
+    if( msg.format == ImageMessage::FORMAT_GRAYSCALE8 )
     {
-        for(int j=0; j<width; j++)
+        image = QImage(width, height, QImage::Format_Grayscale8);
+
+        for(int i=0; i<height; i++)
         {
-            image.bits()[i*width+j] = msg.data[i*width+j];
+            for(int j=0; j<width; j++)
+            {
+                image.bits()[i*width+j] = msg.data[i*width+j];
+            }
         }
     }
+    else if( msg.format == ImageMessage::FORMAT_ENCODED )
+    {
+        // TODO
+    }
 
-    myInterface->imageReceived(frameid, timestamp, image);
+    if(image.isNull() == false)
+    {
+        myInterface->imageReceived(frameid, timestamp, image);
+    }
 }
 
 RobotInterface::RobotInterface() :

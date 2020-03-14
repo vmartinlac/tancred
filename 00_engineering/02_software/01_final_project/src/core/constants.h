@@ -1,5 +1,9 @@
 
 #pragma once
 
-#define MOTOR_COMMAND_TTL_MS 500
+#define MOTOR_COMMAND_TTL_MS 400
+
+#define VIDEO_IMAGE_WIDTH 320
+#define VIDEO_IMAGE_HEIGHT 240
+#define VIDEO_FPS 30
 

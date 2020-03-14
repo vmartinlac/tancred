@@ -7,6 +7,7 @@
 
 VideoWidget::VideoWidget(RobotInterface* conn, QWidget* parent) : QWidget(parent)
 {
+    myZoom = 1.0;
     myConn = conn;
     myMode = MODE_SILENT;
     myHasNewImage = false;
@@ -60,6 +61,21 @@ VideoWidget::~VideoWidget()
 {
 }
 
+void VideoWidget::wheelEvent(QWheelEvent* ev)
+{
+    const double factor_max = 20.0;
+    const double factor_min = 1.0/20.0;
+    const double speed = 2.0e-3;
+    const QPoint delta = ev->angleDelta();
+
+    if(delta.isNull() == false)
+    {
+        const double new_factor = myZoom * std::exp(speed * delta.y());
+        myZoom = std::max(factor_min, std::min(factor_max, new_factor));
+        update();
+    }
+}
+
 void VideoWidget::paintEvent(QPaintEvent* ev)
 {
     QPainter painter(this);
@@ -74,9 +90,12 @@ void VideoWidget::paintEvent(QPaintEvent* ev)
 
     if(myImage.isNull() == false && myImage.width() >= 2*margin && myImage.height() >= 2*margin)
     {
+        /*
         double scale = 1.0;
         scale = std::min<double>( scale, double(width()-2*margin) / double(myImage.width()) );
         scale = std::min<double>( scale, double(height()-2*margin) / double(myImage.height()) );
+        */
+        const double scale = myZoom;
 
         if( std::min<double>(scale*myImage.width(), scale*myImage.height()) > 30.0 )
         {

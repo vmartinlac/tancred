@@ -5,14 +5,8 @@
 #include <librealsense2/rs.hpp>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Network.h>
-#include <vpx/vpx_codec.h>
-#include <vpx/vpx_encoder.h>
-#include <vpx/vp8cx.h>
 #include <ImageMessage.h>
-
-#define IMAGE_WIDTH 640
-#define IMAGE_HEIGHT 480
-#define IMAGE_FPS 15
+#include "constants.h"
 
 class VideoInput
 {
@@ -34,16 +28,18 @@ public:
             {
                 rs2::stream_profile p = profiles[j];
 
-                if( p.is<rs2::video_stream_profile>() && p.fps() == IMAGE_FPS && p.format() == RS2_FORMAT_YUYV && p.stream_type() == RS2_STREAM_COLOR )
+                if( p.is<rs2::video_stream_profile>() && p.fps() == VIDEO_FPS && p.format() == RS2_FORMAT_YUYV && p.stream_type() == RS2_STREAM_COLOR )
                 {
                     rs2::video_stream_profile vp = p.as<rs2::video_stream_profile>();
                     
-                    if( vp.width() == IMAGE_WIDTH && vp.height() == IMAGE_HEIGHT )
+                    if( vp.width() == VIDEO_IMAGE_WIDTH && vp.height() == VIDEO_IMAGE_HEIGHT )
                     {
                         found = true;
                         mySensor = s;
                         myProfile = p;
                     }
+
+                    std::cout << ( (found) ? "Found " : "Skipping " ) << vp.width() << "*" << vp.height() << "@" << p.fps() << std::endl;
                 }
             }
         }
@@ -77,6 +73,7 @@ protected:
     rs2::frame_queue myFrameQueue;
 };
 
+/*
 class Codec
 {
 public:
@@ -89,17 +86,17 @@ public:
         myHasFirstFrameNumber = false;
         myFirstFrameNumber = 0;
 
-        vpx_img_alloc(&myImage, VPX_IMG_FMT_I420, IMAGE_WIDTH, IMAGE_HEIGHT, 1);
+        vpx_img_alloc(&myImage, VPX_IMG_FMT_I420, VIDEO_IMAGE_WIDTH, VIDEO_IMAGE_HEIGHT, 1);
 
         myInterface = vpx_codec_vp9_cx();
 
         vpx_codec_enc_config_default( myInterface, &myConfig, 0);
 
-        myConfig.g_w = IMAGE_WIDTH;
-        myConfig.g_h = IMAGE_HEIGHT;
+        myConfig.g_w = VIDEO_IMAGE_WIDTH;
+        myConfig.g_h = VIDEO_IMAGE_HEIGHT;
         myConfig.g_error_resilient = 1;
         myConfig.g_timebase.num = 1;
-        myConfig.g_timebase.den = IMAGE_FPS;
+        myConfig.g_timebase.den = VIDEO_FPS;
 
         vpx_codec_enc_init(&myContext, myInterface, &myConfig, 0);
     }
@@ -133,20 +130,13 @@ public:
         // Copy frame data to vpx image.
 
         {
-            /*
-            std::cout << myImage.d_w << ' ' << myImage.d_h << std::endl;
-            std::cout << myImage.x_chroma_shift << ' ' << myImage.y_chroma_shift << std::endl;
-            std::cout << myImage.stride[0] << ' ' << myImage.stride[1] << ' ' << myImage.stride[2] << std::endl;
-            std::cout << std::endl;
-            */
-
             // copy Y.
-            for(int i=0; i<IMAGE_HEIGHT; i++)
+            for(int i=0; i<VIDEO_IMAGE_HEIGHT; i++)
             {
                 const uint8_t* pfrom = static_cast<const uint8_t*>( frame.get_data() ) + i*frame.get_stride_in_bytes();
                 uint8_t* pto = myImage.planes[VPX_PLANE_Y] + i*myImage.stride[VPX_PLANE_Y];
 
-                for(int j=0; j<IMAGE_WIDTH; j++)
+                for(int j=0; j<VIDEO_IMAGE_WIDTH; j++)
                 {
                     *pto = *pfrom;
                     pfrom += 2;
@@ -155,14 +145,14 @@ public:
             }
 
             // copy U and V.
-            for(int i=0; i<IMAGE_HEIGHT/2; i++)
+            for(int i=0; i<VIDEO_IMAGE_HEIGHT/2; i++)
             {
                 const uint8_t* p0 = static_cast<const uint8_t*>( frame.get_data() ) + (2*i+0) * frame.get_stride_in_bytes() + 1;
                 const uint8_t* p1 = static_cast<const uint8_t*>( frame.get_data() ) + (2*i+1) * frame.get_stride_in_bytes() + 1;
                 uint8_t* pu = myImage.planes[VPX_PLANE_U] + i*myImage.stride[VPX_PLANE_U];
                 uint8_t* pv = myImage.planes[VPX_PLANE_V] + i*myImage.stride[VPX_PLANE_V];
 
-                for(int j=0; j<IMAGE_WIDTH/2; j++)
+                for(int j=0; j<VIDEO_IMAGE_WIDTH/2; j++)
                 {
                     *pu = static_cast<uint8_t>( 0.5f * ( float(*p0) + float(*p1) ) );
                     pu++;
@@ -196,8 +186,8 @@ public:
                 ImageMessage& msg = port.prepare();
                 msg.frameid = frame.get_frame_number();
                 msg.timestamp = frame.get_timestamp();
-                msg.width = IMAGE_WIDTH;
-                msg.height = IMAGE_HEIGHT;
+                msg.width = VIDEO_IMAGE_WIDTH;
+                msg.height = VIDEO_IMAGE_HEIGHT;
                 msg.format = ImageMessage::FORMAT_VP9;
                 msg.data.resize(pkt->data.frame.sz);
                 memcpy(msg.data.data(), pkt->data.frame.buf, pkt->data.frame.sz);
@@ -224,6 +214,7 @@ protected:
     vpx_codec_ctx_t myContext;
     vpx_codec_enc_cfg_t myConfig;
 };
+*/
 
 void send_raw_image(rs2::video_frame image, yarp::os::BufferedPort<ImageMessage>& port)
 {
@@ -233,15 +224,15 @@ void send_raw_image(rs2::video_frame image, yarp::os::BufferedPort<ImageMessage>
 
     msg.frameid = image.get_frame_number();
     msg.timestamp = image.get_timestamp();
-    msg.width = IMAGE_WIDTH;
-    msg.height = IMAGE_HEIGHT;
+    msg.width = VIDEO_IMAGE_WIDTH;
+    msg.height = VIDEO_IMAGE_HEIGHT;
     msg.format = ImageMessage::FORMAT_GRAYSCALE8;
-    msg.data.resize(IMAGE_WIDTH*IMAGE_HEIGHT);
-    for(int i=0; i<IMAGE_HEIGHT; i++)
+    msg.data.resize(VIDEO_IMAGE_WIDTH*VIDEO_IMAGE_HEIGHT);
+    for(int i=0; i<VIDEO_IMAGE_HEIGHT; i++)
     {
-        for(int j=0; j<IMAGE_WIDTH; j++)
+        for(int j=0; j<VIDEO_IMAGE_WIDTH; j++)
         {
-            msg.data[IMAGE_WIDTH*i+j] = data[2*i*IMAGE_WIDTH+2*j];
+            msg.data[VIDEO_IMAGE_WIDTH*i+j] = data[2*i*VIDEO_IMAGE_WIDTH+2*j];
         }
     }
 
@@ -257,8 +248,10 @@ int main(int num_args, char** args)
 
     // initialize VPX.
 
+    /*
     Codec codec;
     codec.init();
+    */
 
     // initialize YARP.
 
@@ -300,14 +293,14 @@ int main(int num_args, char** args)
 
             if(video_frame)
             {
-                if( video_frame.get_width() != IMAGE_WIDTH || video_frame.get_height() != IMAGE_HEIGHT || video_frame.get_profile().format() != RS2_FORMAT_YUYV )
+                if( video_frame.get_width() != VIDEO_IMAGE_WIDTH || video_frame.get_height() != VIDEO_IMAGE_HEIGHT || video_frame.get_profile().format() != RS2_FORMAT_YUYV )
                 {
                     std::cerr << "Internal error!" << std::endl;
                     exit(1);
                 }
 
                 send_raw_image(video_frame, raw_port);
-                codec.send(video_frame, compressed_port);
+                //codec.send(video_frame, compressed_port);
             }
         }
     }
@@ -315,7 +308,7 @@ int main(int num_args, char** args)
     thread.join();
     raw_port.close();
     compressed_port.close();
-    codec.finalize();
+    //codec.finalize();
     input.finalize();
 
     return 0;

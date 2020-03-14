@@ -4,6 +4,7 @@
 #include <QTimer>
 #include <QMutex>
 #include <QWidget>
+#include <QWheelEvent>
 #include <QPaintEvent>
 #include <QMouseEvent>
 #include "RobotInterface.h"
@@ -39,6 +40,7 @@ protected:
     void mouseMoveEvent(QMouseEvent*) override;
     void mousePressEvent(QMouseEvent*) override;
     void mouseReleaseEvent(QMouseEvent*) override;
+    void wheelEvent(QWheelEvent*) override;
 
     double convertLocationToSteering(const QPoint& pt);
 
@@ -52,5 +54,6 @@ protected:
     QTimer* myMotorsTimer;
     bool myCommandForward;
     double myCommandSteering;
+    double myZoom;
 };
 

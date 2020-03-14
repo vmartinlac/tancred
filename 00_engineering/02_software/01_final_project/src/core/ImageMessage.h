@@ -12,7 +12,7 @@ public:
     enum Format
     {
         FORMAT_GRAYSCALE8,
-        FORMAT_VP9
+        FORMAT_ENCODED
     };
 
 public:
