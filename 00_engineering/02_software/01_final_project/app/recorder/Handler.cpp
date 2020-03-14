@@ -193,7 +193,7 @@ void Handler::receiveImageMessage(InternalImageMessagePtr msg)
         {
             cv::Mat1b image(msg->height, msg->width, reinterpret_cast<uint8_t*>(msg->data.data()));
 
-            ok = cv::imencode("png", image, encoded);
+            ok = cv::imencode(".png", image, encoded);
             err = "Could not encode image!";
         }
 
@@ -203,7 +203,7 @@ void Handler::receiveImageMessage(InternalImageMessagePtr msg)
         {
             do
             {
-                image_filename = QString("IMG_%1").arg( myNextImageId, 5, 10, QChar('0') );
+                image_filename = QString("IMG_%1.png").arg( myNextImageId, 5, 10, QChar('0') );
                 image_path = myDirectory.absoluteFilePath(image_filename);
                 myNextImageId++;
             }
@@ -212,7 +212,8 @@ void Handler::receiveImageMessage(InternalImageMessagePtr msg)
 
         if(ok)
         {
-            fd = open(image_path.toUtf8().data(), O_WRONLY|O_SYNC);
+            std::cout << image_path.toStdString() << std::endl;
+            fd = open(image_path.toUtf8().data(), O_WRONLY|O_SYNC|O_CREAT, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH );
             ok = (fd >= 0);
             err = "Could not open image file for writing!";
         }
@@ -246,11 +247,6 @@ void Handler::receiveImageMessage(InternalImageMessagePtr msg)
             sqlite3_step(myImageStatement);
         }
 
-        if(ok)
-        {
-            myNumImageMessagesToProcess--;
-        }
-
         if( fd >= 0 )
         {
             close(fd);
@@ -261,6 +257,14 @@ void Handler::receiveImageMessage(InternalImageMessagePtr msg)
             std::cout << err << std::endl;
             exit(1);
         }
+    }
+
+    myNumImageMessagesToProcess--;
+
+    if(myNumImageMessagesToProcess < 0)
+    {
+        std::cout << "Internal error!" << std::endl;
+        exit(1);
     }
 }
 
@@ -288,12 +292,18 @@ void Handler::receiveMotorsMessage(InternalMotorsMessagePtr msg)
         sqlite3_bind_double(myMotorsStatement, 3, msg->steering);
 
         sqlite3_step(myMotorsStatement);
-
-        myNumMotorsMessagesToProcess--;
     }
     else
     {
         myInSequence = false;
+    }
+
+    myNumMotorsMessagesToProcess--;
+
+    if(myNumMotorsMessagesToProcess < 0)
+    {
+        std::cout << "Internal error!" << std::endl;
+        exit(1);
     }
 }
 
@@ -332,7 +342,7 @@ Handler::MotorsCallback::MotorsCallback(Handler* h)
 
 void Handler::MotorsCallback::onRead(MotorsMessage& msg)
 {
-    if(myHandler->myNumMotorsMessagesToProcess >= 100)
+    if(myHandler->myNumMotorsMessagesToProcess >= 20000)
     {
         myHandler->myNumSkippedMotorsMessages++;
     }

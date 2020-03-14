@@ -1,13 +1,14 @@
 #include  <Servo.h>
 
-int PIN_SERVO = 9;
-int PIN_LPWM = 11;
-int PIN_RPWM = 10;
-int PIN_LEN = 13;
-int PIN_REN = 12;
+const int PIN_SERVO = 9;
+const int PIN_LPWM = 11;
+const int PIN_RPWM = 10;
+const int PIN_LEN = 13;
+const int PIN_REN = 12;
 
-int DIRECTION_AMPLITUDE = 30;
-int SPEED_AMPLITUDE = 90;
+const int DIRECTION_AMPLITUDE = 30;
+const int SPEED_AMPLITUDE = 70;
+//const int SPEED_AMPLITUDE = 90;
 
 Servo servo;
 
