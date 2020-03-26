@@ -9,6 +9,6 @@ target_link_libraries(
     tancred_core
     opencv_imgproc
     Threads::Threads
-    PkgConfig::libavcodec
+    #PkgConfig::libavcodec
     realsense2::realsense2)
 
