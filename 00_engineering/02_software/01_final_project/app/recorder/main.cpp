@@ -198,8 +198,8 @@ int main(int num_args, char** args)
 
     if(ok)
     {
-        image_port.open("/recorder/camera_input");
-        motors_port.open("/recorder/motors_input");
+        image_port.open("/recorder/input/camera");
+        motors_port.open("/recorder/input/motors");
 
         image_port.useCallback(image_callback);
         motors_port.useCallback(motors_callback);

@@ -9,6 +9,7 @@ import cv2
 import torch
 import torch.cuda
 import torch.optim
+import torch.jit
 import torch.utils.data
 
 class Dataset(torch.utils.data.Dataset):
@@ -97,6 +98,13 @@ def get_or_create_model():
         model.eval()
     else:
         model = Model()
+
+    #########""
+    #m = torch.jit.script(model)
+    #m.save("model.zip")
+    #exit(0)
+    #########""
+
 
     return model
 

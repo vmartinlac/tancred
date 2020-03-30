@@ -50,7 +50,7 @@ int main(int num_args, char** args)
     yarp::os::Network conn;
 
     yarp::os::BufferedPort<MotorsMessage> port;
-    port.open("/motorsinterface/input");
+    port.open("/motorsinterface/input/motors");
     port.useCallback(glue);
 
     std::cout << "Press ENTER to quit" << std::endl;

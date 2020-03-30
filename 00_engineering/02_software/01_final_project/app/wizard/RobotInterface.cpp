@@ -43,9 +43,9 @@ RobotInterface::RobotInterface() :
     myImageCallback(this)
 {
 
-    myMotorsPort.open("/wizard/motors_output");
-    myAutopilotPort.open("/wizard/autopilot_output");
-    myImagePort.open("/wizard/image_input");
+    myMotorsPort.open("/wizard/output/motors");
+    myAutopilotPort.open("/wizard/output/autopilot");
+    myImagePort.open("/wizard/input/image");
     myImagePort.useCallback(myImageCallback);
 }
 

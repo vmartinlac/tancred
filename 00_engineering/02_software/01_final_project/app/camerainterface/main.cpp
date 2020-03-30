@@ -116,7 +116,7 @@ int main(int num_args, char** args)
     yarp::os::BufferedPort<ImageMessage> raw_port;
     //yarp::os::BufferedPort<ImageMessage> compressed_port;
 
-    raw_port.open("/camerainterface/raw_image_output");
+    raw_port.open("/camerainterface/output/image");
     //compressed_port.open("/camerainterface/compressed_image_output");
 
     // thread allowing the user to request the program to quit.
