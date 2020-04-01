@@ -14,11 +14,6 @@ Material
 * L298N motor driver
 * Home-made 3d-printed platform
 
-Algorithms
-----------
-
-To be determined
-
 Software Dependencies
 ---------------------
 
