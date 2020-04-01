@@ -57,8 +57,9 @@ class App:
 
         samples = list()
 
-        for timestamp, frameid in image_entries:
-            a = [ i for i in range(len(motors_entries)-1) if motors_entries[i][0] <= timestamp and timestamp <= motors_entries[i+1][0] ]
+        for image_timestamp, frameid in image_entries:
+            target_timestamp = image_timestamp + self.inference_delay
+            a = [ i for i in range(len(motors_entries)-1) if motors_entries[i][0] <= target_timestamp and target_timestamp <= motors_entries[i+1][0] ]
             if a:
                 i0 = a[0]
                 i1 = a[-1]+1
@@ -68,9 +69,9 @@ class App:
                 s1 = motors_entries[i1][1]
 
                 if 1 <= t1-t0 and t1-t0 <= 500:
-                    steering = s0 + (s1-s0) * float(timestamp - t0) / float(t1 - t0)
+                    steering = s0 + (s1-s0) * float(target_timestamp - t0) / float(t1 - t0)
 
-                    samples.append( (timestamp, frameid, steering) )
+                    samples.append( (image_timestamp, frameid, steering) )
 
         take_this_sequence = True
         take_this_sequence = take_this_sequence and ( len(samples) >= 100 )
@@ -87,7 +88,7 @@ class App:
 
             # create sequence directory
 
-            in_place = False
+            in_place = True
 
             if not in_place:
                 dir_path = os.path.join(self.export_directory, str(sequence_id).zfill(9) )
@@ -141,6 +142,7 @@ class App:
 
     def export(self, root_directory, export_directory):
 
+        self.inference_delay = 10 # milliseconds.
         self.root_directory = root_directory
         self.export_directory = export_directory
 
