@@ -22,10 +22,9 @@ To be determined
 Software Dependencies
 ---------------------
 
-* FFmpeg
 * OpenCV
+* PyTorch
 * Qt5
 * realsense2
 * sqlite3
 * YARP
-
