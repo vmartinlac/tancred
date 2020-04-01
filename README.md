@@ -21,5 +21,4 @@ Software Dependencies
 * PyTorch
 * Qt5
 * realsense2
-* sqlite3
 * YARP
